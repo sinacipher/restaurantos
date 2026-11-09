@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 6 — Business Workflows (complete, awaiting verification)
+Step 7 — Permission Matrix (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -11,9 +11,10 @@ Step 6 — Business Workflows (complete, awaiting verification)
 - Step 4 — MVP Definition
 - Step 5 — Non-Functional Requirements
 - Step 6 — Business Workflows
+- Step 7 — Permission Matrix
 
 ## Pending Steps
-- Steps 7–100 per master roadmap
+- Steps 8–100 per master roadmap
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -24,6 +25,8 @@ Step 6 — Business Workflows (complete, awaiting verification)
 - Windows 11 + CMD + Notepad only.
 - Multi-machine: Git + private GitHub repo. Pull on start, commit+push on stop. `.env` never committed.
 - `PROJECT_STATUS.md` lives at **project root only** (never in `docs/`).
+- File creation habit: `type nul > path\FILE.md` then `notepad path\FILE.md`; edit with **Ctrl+S**, never Save As.
+- Notepad editing uses **absolute paths** to prevent directory drift.
 
 ## Free-Tier Planning Ceilings (verified 2026-11-09)
 | Service | Planned ceiling |
@@ -42,6 +45,7 @@ Step 6 — Business Workflows (complete, awaiting verification)
 - `docs/MVP_DEFINITION.md` — MVP / v1 / Later tiers
 - `docs/NON_FUNCTIONAL_REQUIREMENTS.md` — 9 NFR groups
 - `docs/BUSINESS_WORKFLOWS.md` — order/payment/inventory/reservation/kitchen rules
+- `docs/PERMISSION_MATRIX.md` — roles × permissions, enforcement rules
 
 ## MVP Scope (locked)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
@@ -55,6 +59,13 @@ Step 6 — Business Workflows (complete, awaiting verification)
 - Timestamps in UTC; branch IANA TZ for display and hours.
 - Tenant resolved server-side from session + membership; cross-tenant → 404.
 
+## Locked Permission Rules
+- 8 roles with branch vs tenant scope.
+- Permission names `<domain>:<action>[:<qualifier>]`.
+- Middleware chain: requireAuth → requireTenant → requirePermission.
+- Cross-tenant → 404; same-tenant permission failure → 403 with PERMISSION_DENIED.
+- Frontend matrix is UX only; backend is authoritative.
+
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
 - Neon scale-to-zero causes first-connection delay after 5 min inactivity.
@@ -62,7 +73,6 @@ Step 6 — Business Workflows (complete, awaiting verification)
 - Cloudinary credits consumed by transformations + storage + bandwidth together.
 - Multi-machine edit conflicts if pull/push discipline is skipped.
 - Scope creep risk: v1 features leaking into Phase 1–6 work.
-- Risk of editing the wrong `PROJECT_STATUS.md` — enforced root-only rule.
 
 ## Test Results
 - None yet
