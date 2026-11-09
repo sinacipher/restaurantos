@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 14 — Tailwind CSS v4 (complete, awaiting verification)
+Step 15 — TypeScript strict mode + path aliases (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -19,9 +19,10 @@ Step 14 — Tailwind CSS v4 (complete, awaiting verification)
 - Step 12 — Vite + React + TypeScript scaffold
 - Step 13 — Install approved dependencies
 - Step 14 — Tailwind CSS v4
+- Step 15 — TypeScript strict mode + path aliases
 
 ## Pending Steps
-- Steps 15–100
+- Steps 16–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -39,7 +40,7 @@ Step 14 — Tailwind CSS v4 (complete, awaiting verification)
 - `index.html` at root → `/frontend/main.tsx`; React lives in `frontend/`.
 - Single `tsconfig.json` at root; `build` = `tsc --noEmit && vite build`.
 - **TypeScript pinned to `~5.9.3`** — `typescript-eslint` (8.x) does not support TS 6+/7+.
-- Express **5.x** installed (async errors auto-bubble; do not copy Express 4 middleware patterns).
+- Express **5.x** installed (async errors auto-bubble).
 - Do **NOT** run `npm audit fix --force`.
 
 ## Free-Tier Planning Ceilings (verified 2026-11-09)
@@ -67,12 +68,19 @@ Step 14 — Tailwind CSS v4 (complete, awaiting verification)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
 
 ## Design System (Step 14)
-Tailwind v4 via `@tailwindcss/vite`. No `tailwind.config.js`, no `postcss.config.js` (deviation from Step 9 §2 — theming is in `frontend/index.css` via `@theme {}`).
+Tailwind v4 via `@tailwindcss/vite`. Theming in `frontend/index.css` via `@theme {}`.
 - Brand: warm copper (`brand-50`…`brand-900`, primary = `brand-600` = #c15e2c)
 - Ink: neutral dark scale (`ink-50`…`ink-950`)
 - Semantic: `success`, `warning`, `danger`
 - Radius: `sm=6px`, `md=10px`, `lg=14px`, `xl=20px`
-- Font: system-ui stack (custom font added in Step 20 if needed)
+
+## TypeScript (Step 15)
+Ultra-strict flags enabled: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, `verbatimModuleSyntax`.
+Path aliases:
+- `@frontend/*` → `frontend/*`
+- `@server/*` → `server/*`
+- `@shared/*` → `shared/*`
+Mirrored in `vite.config.ts` via `resolve.alias`.
 
 ## Installed Dependencies (Step 13)
 Server + shared runtime: express@5, cors, cookie-parser, better-auth, drizzle-orm, @neondatabase/serverless, zod, stripe, ably, cloudinary, resend
@@ -90,7 +98,7 @@ Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9
 - `npm audit fix --force` can break working setup — never run it.
 
 ## Test Results
-- None yet
+- Step 15: `npx tsc --noEmit` → 0 errors
 
 ## Provider Usage Notes
 - Check provider dashboards manually. Application cannot read authoritative billing data.
