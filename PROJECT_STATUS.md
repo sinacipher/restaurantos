@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 8 — Domain Models (complete, awaiting verification)
+Step 9 — System Architecture (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -13,9 +13,10 @@ Step 8 — Domain Models (complete, awaiting verification)
 - Step 6 — Business Workflows
 - Step 7 — Permission Matrix
 - Step 8 — Domain Models
+- Step 9 — System Architecture
 
 ## Pending Steps
-- Steps 9–100 per master roadmap
+- Steps 10–100 per master roadmap
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -42,12 +43,13 @@ Step 8 — Domain Models (complete, awaiting verification)
 ## Documents
 - `docs/PERSONAS.md`
 - `docs/USER_JOURNEYS.md`
-- `docs/FUNCTIONAL_REQUIREMENTS.md` — 86 features
+- `docs/FUNCTIONAL_REQUIREMENTS.md`
 - `docs/MVP_DEFINITION.md`
 - `docs/NON_FUNCTIONAL_REQUIREMENTS.md`
 - `docs/BUSINESS_WORKFLOWS.md`
 - `docs/PERMISSION_MATRIX.md`
-- `docs/DOMAIN_MODELS.md` — entities, invariants, ERD
+- `docs/DOMAIN_MODELS.md`
+- `docs/SYSTEM_ARCHITECTURE.md` — diagrams, layout, API conventions, risks, env vars
 
 ## MVP Scope (locked)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
@@ -75,6 +77,13 @@ Step 8 — Domain Models (complete, awaiting verification)
 - 8 business-critical unique constraints listed in `docs/DOMAIN_MODELS.md` §11.7.
 - Soft delete on restaurants, menu_items, branches, ingredients, suppliers.
 
+## Locked Architecture
+- Directory layout in `docs/SYSTEM_ARCHITECTURE.md` §2 is the target for Step 18.
+- One Express app, one Vercel Function (`api/index.ts`).
+- Error envelope: `{ error: { code, message, details } }`.
+- Status codes and idempotency rules fixed (see §3).
+- Env vars validated by Zod at startup.
+
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
 - Neon scale-to-zero causes first-connection delay after 5 min inactivity.
@@ -82,6 +91,7 @@ Step 8 — Domain Models (complete, awaiting verification)
 - Cloudinary credits consumed by transformations + storage + bandwidth together.
 - Multi-machine edit conflicts if pull/push discipline is skipped.
 - Scope creep risk: v1 features leaking into Phase 1–6 work.
+- `vercel dev -L` Express+Vite routing must be proven at Step 19 before building.
 
 ## Test Results
 - None yet
