@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 9 — System Architecture (complete, awaiting verification)
+Step 11 — Project Initialization (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -14,9 +14,11 @@ Step 9 — System Architecture (complete, awaiting verification)
 - Step 7 — Permission Matrix
 - Step 8 — Domain Models
 - Step 9 — System Architecture
+- Step 10 — Environment Inspection (Node 26, npm 11, git 2.56, Vercel 65 — Laptop A + B)
+- Step 11 — Project Initialization
 
 ## Pending Steps
-- Steps 10–100 per master roadmap
+- Steps 12–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -29,13 +31,15 @@ Step 9 — System Architecture (complete, awaiting verification)
 - `PROJECT_STATUS.md` lives at **project root only** (never in `docs/`).
 - File creation habit: `type nul > path\FILE.md` then `notepad path\FILE.md`; edit with **Ctrl+S**, never Save As.
 - Notepad editing uses **absolute paths** to prevent directory drift.
+- **Single** root `package.json` (ESM `"type": "module"`); no per-folder package.json.
+- `.gitattributes` forces LF; only `.cmd`/`.bat` keep CRLF.
 
 ## Free-Tier Planning Ceilings (verified 2026-11-09)
 | Service | Planned ceiling |
 |---|---|
-| Vercel Hobby | 1M function invocations/mo, 4 active CPU-hrs/mo, 360 GB-hrs provisioned memory |
+| Vercel Hobby | 1M invocations/mo, 4 CPU-hrs/mo, 360 GB-hrs provisioned memory |
 | Neon Free | 100 CU-hrs/project/mo, 1 GB storage/project, 5 GB public transfer/project/mo |
-| Ably Free | 6M messages/mo, 200 concurrent connections, 200 concurrent channels |
+| Ably Free | 6M msgs/mo, 200 concurrent connections, 200 concurrent channels |
 | Cloudinary Free | 25 credits/mo |
 | Resend Free | 3,000 emails/mo, 100 emails/day |
 | Stripe Test Mode | Test keys only, no real money |
@@ -49,49 +53,19 @@ Step 9 — System Architecture (complete, awaiting verification)
 - `docs/BUSINESS_WORKFLOWS.md`
 - `docs/PERMISSION_MATRIX.md`
 - `docs/DOMAIN_MODELS.md`
-- `docs/SYSTEM_ARCHITECTURE.md` — diagrams, layout, API conventions, risks, env vars
+- `docs/SYSTEM_ARCHITECTURE.md`
 
 ## MVP Scope (locked)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
 
-## Locked Business Rules
-- Order states: pending_confirmation → accepted → preparing → ready → completed (plus rejected/cancelled terminals).
-- Payment states independent from order states.
-- Inventory = ledger of movements; idempotent per order; default deduct on `accepted`.
-- Reservations overlap-prevented at DB transaction level.
-- Money: integer minor units, tax in basis points, banker's rounding.
-- Timestamps in UTC; branch IANA TZ for display and hours.
-- Tenant resolved server-side from session + membership; cross-tenant → 404.
-
-## Locked Permission Rules
-- 8 roles with branch vs tenant scope.
-- Permission names `<domain>:<action>[:<qualifier>]`.
-- Middleware chain: requireAuth → requireTenant → requirePermission.
-- Cross-tenant → 404; same-tenant permission failure → 403 with PERMISSION_DENIED.
-- Frontend matrix is UX only; backend is authoritative.
-
-## Locked Domain Invariants
-- Every tenant row carries `restaurant_id`; branch rows carry `branch_id` too.
-- Append-only: order_events, payment_events, reservation_events, stock_movements, audit_logs.
-- Historical snapshot rule on orders/order_items/reservation state.
-- 8 business-critical unique constraints listed in `docs/DOMAIN_MODELS.md` §11.7.
-- Soft delete on restaurants, menu_items, branches, ingredients, suppliers.
-
-## Locked Architecture
-- Directory layout in `docs/SYSTEM_ARCHITECTURE.md` §2 is the target for Step 18.
-- One Express app, one Vercel Function (`api/index.ts`).
-- Error envelope: `{ error: { code, message, details } }`.
-- Status codes and idempotency rules fixed (see §3).
-- Env vars validated by Zod at startup.
-
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
-- Neon scale-to-zero causes first-connection delay after 5 min inactivity.
+- Neon scale-to-zero causes first-connection delay.
 - Ably free tier message counting includes fan-out delivery.
-- Cloudinary credits consumed by transformations + storage + bandwidth together.
+- Cloudinary credits consumed by transforms + storage + bandwidth.
 - Multi-machine edit conflicts if pull/push discipline is skipped.
-- Scope creep risk: v1 features leaking into Phase 1–6 work.
-- `vercel dev -L` Express+Vite routing must be proven at Step 19 before building.
+- Scope creep risk: v1 features leaking into MVP.
+- `vercel dev -L` Express+Vite routing must be proven at Step 19.
 
 ## Test Results
 - None yet
