@@ -1,14 +1,15 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 1 — User Personas (complete, awaiting verification)
+Step 2 — User Journeys (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
 - Step 1 — User Personas
+- Step 2 — User Journeys
 
 ## Pending Steps
-- Steps 2–100 per master roadmap
+- Steps 3–100 per master roadmap
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -29,16 +30,9 @@ Step 1 — User Personas (complete, awaiting verification)
 | Resend Free | 3,000 emails/mo, 100 emails/day |
 | Stripe Test Mode | Test keys only, no real money |
 
-## Personas Defined
-- Platform Administrator
-- Restaurant Owner
-- Restaurant Manager
-- Cashier
-- Kitchen Staff
-- Inventory Manager
-- Registered Customer
-- Guest Customer
-See `docs/PERSONAS.md`.
+## Documents
+- `docs/PERSONAS.md` — 8 personas
+- `docs/USER_JOURNEYS.md` — 12 journeys (J1–J12)
 
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
