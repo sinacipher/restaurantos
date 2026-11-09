@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 12 — Vite + React + TypeScript scaffold (complete, awaiting verification)
+Step 13 — Install approved dependencies (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -17,9 +17,10 @@ Step 12 — Vite + React + TypeScript scaffold (complete, awaiting verification)
 - Step 10 — Environment Inspection (Laptop A + B)
 - Step 11 — Project Initialization
 - Step 12 — Vite + React + TypeScript scaffold
+- Step 13 — Install approved dependencies
 
 ## Pending Steps
-- Steps 13–100
+- Steps 14–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -36,11 +37,14 @@ Step 12 — Vite + React + TypeScript scaffold (complete, awaiting verification)
 - `.gitattributes` forces LF; `.cmd`/`.bat` keep CRLF.
 - `index.html` at root → `/frontend/main.tsx`; React lives in `frontend/`.
 - Single `tsconfig.json` at root; `build` = `tsc --noEmit && vite build`.
+- **TypeScript pinned to `~5.9.3`** — `typescript-eslint` (8.x) does not support TS 6+/7+.
+- Express **5.x** installed (breaking changes vs 4 accepted; async errors auto-bubble).
+- Do **NOT** run `npm audit fix --force` — the 14 moderate warnings are transitive dev-dep noise.
 
 ## Free-Tier Planning Ceilings (verified 2026-11-09)
 | Service | Planned ceiling |
 |---|---|
-| Vercel Hobby | 1M invocations/mo, 4 CPU-hrs/mo, 360 GB-hrs provisioned memory |
+| Vercel Hobby | 1M invocations/mo, 4 active CPU-hrs/mo, 360 GB-hrs provisioned memory |
 | Neon Free | 100 CU-hrs/project/mo, 1 GB storage/project, 5 GB public transfer/project/mo |
 | Ably Free | 6M msgs/mo, 200 concurrent connections, 200 concurrent channels |
 | Cloudinary Free | 25 credits/mo |
@@ -61,9 +65,10 @@ Step 12 — Vite + React + TypeScript scaffold (complete, awaiting verification)
 ## MVP Scope (locked)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
 
-## Installed Dependencies (Step 12)
-- prod: `react`, `react-dom`
-- dev: `vite`, `@vitejs/plugin-react`, `typescript`, `@types/react`, `@types/react-dom`, `@types/node`
+## Installed Dependencies (Step 13)
+Server + shared runtime: express@5, cors, cookie-parser, better-auth, drizzle-orm, @neondatabase/serverless, zod, stripe, ably, cloudinary, resend
+Frontend runtime: react@19, react-dom@19, react-router-dom, @tanstack/react-query, @tanstack/react-table, zustand, react-hook-form, @hookform/resolvers, framer-motion, lucide-react, sonner, recharts, ably, react-qr-code
+Dev: vite, @vitejs/plugin-react, typescript@~5.9.3, @types/react, @types/react-dom, @types/node, @types/express, @types/cors, @types/cookie-parser, drizzle-kit, tsx, eslint, @eslint/js, typescript-eslint, prettier, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, vitest, @testing-library/react, @testing-library/jest-dom, jsdom, supertest, @types/supertest, @playwright/test
 
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
@@ -73,6 +78,7 @@ Step 12 — Vite + React + TypeScript scaffold (complete, awaiting verification)
 - Multi-machine edit conflicts if pull/push discipline is skipped.
 - Scope creep risk: v1 features leaking into MVP.
 - `vercel dev -L` Express+Vite routing must be proven at Step 19.
+- `npm audit fix --force` can break working setup — never run it.
 
 ## Test Results
 - None yet
