@@ -1,16 +1,17 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 3 — Functional Requirements (complete, awaiting verification)
+Step 4 — MVP Definition (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
 - Step 1 — User Personas
 - Step 2 — User Journeys
 - Step 3 — Functional Requirements
+- Step 4 — MVP Definition
 
 ## Pending Steps
-- Steps 4–100 per master roadmap
+- Steps 5–100 per master roadmap
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -20,7 +21,7 @@ Step 3 — Functional Requirements (complete, awaiting verification)
 - Stack: React, Vite, TypeScript, Tailwind, Express, Drizzle, Better Auth, Ably, Cloudinary, Resend, Stripe Test Mode.
 - Windows 11 + CMD + Notepad only.
 - Multi-machine: Git + private GitHub repo. Pull on start, commit+push on stop. `.env` never committed.
-- `PROJECT_STATUS.md` lives at project root, not in `docs/`.
+- `PROJECT_STATUS.md` lives at **project root only** (never in `docs/`).
 
 ## Free-Tier Planning Ceilings (verified 2026-11-09)
 | Service | Planned ceiling |
@@ -33,9 +34,14 @@ Step 3 — Functional Requirements (complete, awaiting verification)
 | Stripe Test Mode | Test keys only, no real money |
 
 ## Documents
-- `docs/PERSONAS.md` — 8 personas
-- `docs/USER_JOURNEYS.md` — 12 journeys (J1–J12)
-- `docs/FUNCTIONAL_REQUIREMENTS.md` — 86 features (55 M / 26 S / 5 C)
+- `docs/PERSONAS.md`
+- `docs/USER_JOURNEYS.md`
+- `docs/FUNCTIONAL_REQUIREMENTS.md` — 86 features
+- `docs/MVP_DEFINITION.md` — MVP / v1 / Later tiers
+
+## MVP Scope (locked)
+~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
+MVP acceptance test defined in `docs/MVP_DEFINITION.md`.
 
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
@@ -43,6 +49,7 @@ Step 3 — Functional Requirements (complete, awaiting verification)
 - Ably free tier message counting includes fan-out delivery.
 - Cloudinary credits consumed by transformations + storage + bandwidth together.
 - Multi-machine edit conflicts if pull/push discipline is skipped.
+- Risk of scope creep if v1 features leak into Phase 1–6 work.
 
 ## Test Results
 - None yet
