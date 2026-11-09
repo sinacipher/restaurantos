@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 13 — Install approved dependencies (complete, awaiting verification)
+Step 14 — Tailwind CSS v4 (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -18,9 +18,10 @@ Step 13 — Install approved dependencies (complete, awaiting verification)
 - Step 11 — Project Initialization
 - Step 12 — Vite + React + TypeScript scaffold
 - Step 13 — Install approved dependencies
+- Step 14 — Tailwind CSS v4
 
 ## Pending Steps
-- Steps 14–100
+- Steps 15–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -38,8 +39,8 @@ Step 13 — Install approved dependencies (complete, awaiting verification)
 - `index.html` at root → `/frontend/main.tsx`; React lives in `frontend/`.
 - Single `tsconfig.json` at root; `build` = `tsc --noEmit && vite build`.
 - **TypeScript pinned to `~5.9.3`** — `typescript-eslint` (8.x) does not support TS 6+/7+.
-- Express **5.x** installed (breaking changes vs 4 accepted; async errors auto-bubble).
-- Do **NOT** run `npm audit fix --force` — the 14 moderate warnings are transitive dev-dep noise.
+- Express **5.x** installed (async errors auto-bubble; do not copy Express 4 middleware patterns).
+- Do **NOT** run `npm audit fix --force`.
 
 ## Free-Tier Planning Ceilings (verified 2026-11-09)
 | Service | Planned ceiling |
@@ -65,10 +66,18 @@ Step 13 — Install approved dependencies (complete, awaiting verification)
 ## MVP Scope (locked)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
 
+## Design System (Step 14)
+Tailwind v4 via `@tailwindcss/vite`. No `tailwind.config.js`, no `postcss.config.js` (deviation from Step 9 §2 — theming is in `frontend/index.css` via `@theme {}`).
+- Brand: warm copper (`brand-50`…`brand-900`, primary = `brand-600` = #c15e2c)
+- Ink: neutral dark scale (`ink-50`…`ink-950`)
+- Semantic: `success`, `warning`, `danger`
+- Radius: `sm=6px`, `md=10px`, `lg=14px`, `xl=20px`
+- Font: system-ui stack (custom font added in Step 20 if needed)
+
 ## Installed Dependencies (Step 13)
 Server + shared runtime: express@5, cors, cookie-parser, better-auth, drizzle-orm, @neondatabase/serverless, zod, stripe, ably, cloudinary, resend
 Frontend runtime: react@19, react-dom@19, react-router-dom, @tanstack/react-query, @tanstack/react-table, zustand, react-hook-form, @hookform/resolvers, framer-motion, lucide-react, sonner, recharts, ably, react-qr-code
-Dev: vite, @vitejs/plugin-react, typescript@~5.9.3, @types/react, @types/react-dom, @types/node, @types/express, @types/cors, @types/cookie-parser, drizzle-kit, tsx, eslint, @eslint/js, typescript-eslint, prettier, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, vitest, @testing-library/react, @testing-library/jest-dom, jsdom, supertest, @types/supertest, @playwright/test
+Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9.3, @types/react, @types/react-dom, @types/node, @types/express, @types/cors, @types/cookie-parser, drizzle-kit, tsx, eslint, @eslint/js, typescript-eslint, prettier, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, vitest, @testing-library/react, @testing-library/jest-dom, jsdom, supertest, @types/supertest, @playwright/test
 
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.

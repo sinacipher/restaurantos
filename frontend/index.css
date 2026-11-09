@@ -1,16 +1,55 @@
-:root {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
-  color-scheme: light dark;
-}
+@import "tailwindcss";
 
-* {
-  box-sizing: border-box;
+@theme {
+  /* Brand — warm copper */
+  --color-brand-50:  #fdf6f1;
+  --color-brand-100: #fae9dc;
+  --color-brand-200: #f4d0b6;
+  --color-brand-300: #ecb083;
+  --color-brand-400: #e38850;
+  --color-brand-500: #d97742;
+  --color-brand-600: #c15e2c;
+  --color-brand-700: #a14a22;
+  --color-brand-800: #823d1f;
+  --color-brand-900: #6b331c;
+
+  /* Ink — neutral dark scale */
+  --color-ink-50:  #f7f8fa;
+  --color-ink-100: #eef0f4;
+  --color-ink-200: #dcdfe7;
+  --color-ink-300: #b7bdca;
+  --color-ink-400: #8b93a7;
+  --color-ink-500: #6b7287;
+  --color-ink-600: #535a6c;
+  --color-ink-700: #3f4555;
+  --color-ink-800: #2a2f3a;
+  --color-ink-900: #15181f;
+  --color-ink-950: #0b0d11;
+
+  /* Semantic */
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger:  #dc2626;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Fonts */
+  --font-sans:    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 html,
 body,
 #root {
-  margin: 0;
   min-height: 100vh;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink-900);
+  background-color: var(--color-ink-50);
 }
