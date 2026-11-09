@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 5 — Non-Functional Requirements (complete, awaiting verification)
+Step 6 — Business Workflows (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -10,9 +10,10 @@ Step 5 — Non-Functional Requirements (complete, awaiting verification)
 - Step 3 — Functional Requirements
 - Step 4 — MVP Definition
 - Step 5 — Non-Functional Requirements
+- Step 6 — Business Workflows
 
 ## Pending Steps
-- Steps 6–100 per master roadmap
+- Steps 7–100 per master roadmap
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -39,11 +40,20 @@ Step 5 — Non-Functional Requirements (complete, awaiting verification)
 - `docs/USER_JOURNEYS.md`
 - `docs/FUNCTIONAL_REQUIREMENTS.md` — 86 features
 - `docs/MVP_DEFINITION.md` — MVP / v1 / Later tiers
-- `docs/NON_FUNCTIONAL_REQUIREMENTS.md` — 9 NFR groups with measurable targets
+- `docs/NON_FUNCTIONAL_REQUIREMENTS.md` — 9 NFR groups
+- `docs/BUSINESS_WORKFLOWS.md` — order/payment/inventory/reservation/kitchen rules
 
 ## MVP Scope (locked)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
-MVP acceptance test defined in `docs/MVP_DEFINITION.md`.
+
+## Locked Business Rules
+- Order states: pending_confirmation → accepted → preparing → ready → completed (plus rejected/cancelled terminals).
+- Payment states independent from order states.
+- Inventory = ledger of movements; idempotent per order; default deduct on `accepted`.
+- Reservations overlap-prevented at DB transaction level.
+- Money: integer minor units, tax in basis points, banker's rounding.
+- Timestamps in UTC; branch IANA TZ for display and hours.
+- Tenant resolved server-side from session + membership; cross-tenant → 404.
 
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
