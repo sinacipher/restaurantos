@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 15 — TypeScript strict mode + path aliases (complete, awaiting verification)
+Step 16 — ESLint + Prettier (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -20,9 +20,10 @@ Step 15 — TypeScript strict mode + path aliases (complete, awaiting verificati
 - Step 13 — Install approved dependencies
 - Step 14 — Tailwind CSS v4
 - Step 15 — TypeScript strict mode + path aliases
+- Step 16 — ESLint + Prettier
 
 ## Pending Steps
-- Steps 16–100
+- Steps 17–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -39,7 +40,7 @@ Step 15 — TypeScript strict mode + path aliases (complete, awaiting verificati
 - `.gitattributes` forces LF; `.cmd`/`.bat` keep CRLF.
 - `index.html` at root → `/frontend/main.tsx`; React lives in `frontend/`.
 - Single `tsconfig.json` at root; `build` = `tsc --noEmit && vite build`.
-- **TypeScript pinned to `~5.9.3`** — `typescript-eslint` (8.x) does not support TS 6+/7+.
+- **TypeScript pinned to `~5.9.3`**.
 - Express **5.x** installed (async errors auto-bubble).
 - Do **NOT** run `npm audit fix --force`.
 
@@ -75,17 +76,20 @@ Tailwind v4 via `@tailwindcss/vite`. Theming in `frontend/index.css` via `@theme
 - Radius: `sm=6px`, `md=10px`, `lg=14px`, `xl=20px`
 
 ## TypeScript (Step 15)
-Ultra-strict flags enabled: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, `verbatimModuleSyntax`.
-Path aliases:
-- `@frontend/*` → `frontend/*`
-- `@server/*` → `server/*`
-- `@shared/*` → `shared/*`
-Mirrored in `vite.config.ts` via `resolve.alias`.
+Ultra-strict flags enabled.
+Path aliases: `@frontend/*`, `@server/*`, `@shared/*` — mirrored in `vite.config.ts` and `tsconfig.json`.
 
-## Installed Dependencies (Step 13)
+## Lint / Format (Step 16)
+- ESLint 10 flat config in `eslint.config.js` (TS + React hooks + React refresh + prettier-compat).
+- Rules: no `any`, unused vars must be `_`-prefixed, `consistent-type-imports`, `no-console` (warn/error allowed).
+- Prettier: single quotes, semicolons, 100 cols, LF endings, trailing commas.
+- Ignored by Prettier: `*.md`, `package-lock.json`, build dirs, `.env*`.
+- Scripts: `npm run lint`, `npm run format`.
+
+## Installed Dependencies (Step 13 + 16)
 Server + shared runtime: express@5, cors, cookie-parser, better-auth, drizzle-orm, @neondatabase/serverless, zod, stripe, ably, cloudinary, resend
 Frontend runtime: react@19, react-dom@19, react-router-dom, @tanstack/react-query, @tanstack/react-table, zustand, react-hook-form, @hookform/resolvers, framer-motion, lucide-react, sonner, recharts, ably, react-qr-code
-Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9.3, @types/react, @types/react-dom, @types/node, @types/express, @types/cors, @types/cookie-parser, drizzle-kit, tsx, eslint, @eslint/js, typescript-eslint, prettier, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, vitest, @testing-library/react, @testing-library/jest-dom, jsdom, supertest, @types/supertest, @playwright/test
+Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9.3, @types/react, @types/react-dom, @types/node, @types/express, @types/cors, @types/cookie-parser, drizzle-kit, tsx, eslint, @eslint/js, typescript-eslint, eslint-config-prettier, prettier, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, vitest, @testing-library/react, @testing-library/jest-dom, jsdom, supertest, @types/supertest, @playwright/test
 
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
@@ -99,6 +103,7 @@ Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9
 
 ## Test Results
 - Step 15: `npx tsc --noEmit` → 0 errors
+- Step 16: `npm run lint` → 0 errors; `npx prettier --check .` → clean
 
 ## Provider Usage Notes
 - Check provider dashboards manually. Application cannot read authoritative billing data.

@@ -1,8 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* Brand — warm copper */
-  --color-brand-50:  #fdf6f1;
+  --color-brand-50: #fdf6f1;
   --color-brand-100: #fae9dc;
   --color-brand-200: #f4d0b6;
   --color-brand-300: #ecb083;
@@ -14,7 +14,7 @@
   --color-brand-900: #6b331c;
 
   /* Ink — neutral dark scale */
-  --color-ink-50:  #f7f8fa;
+  --color-ink-50: #f7f8fa;
   --color-ink-100: #eef0f4;
   --color-ink-200: #dcdfe7;
   --color-ink-300: #b7bdca;
@@ -29,7 +29,7 @@
   /* Semantic */
   --color-success: #16a34a;
   --color-warning: #d97706;
-  --color-danger:  #dc2626;
+  --color-danger: #dc2626;
 
   /* Radius */
   --radius-sm: 6px;
@@ -38,7 +38,7 @@
   --radius-xl: 20px;
 
   /* Fonts */
-  --font-sans:    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
