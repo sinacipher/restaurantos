@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 7 — Permission Matrix (complete, awaiting verification)
+Step 8 — Domain Models (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -12,9 +12,10 @@ Step 7 — Permission Matrix (complete, awaiting verification)
 - Step 5 — Non-Functional Requirements
 - Step 6 — Business Workflows
 - Step 7 — Permission Matrix
+- Step 8 — Domain Models
 
 ## Pending Steps
-- Steps 8–100 per master roadmap
+- Steps 9–100 per master roadmap
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -42,10 +43,11 @@ Step 7 — Permission Matrix (complete, awaiting verification)
 - `docs/PERSONAS.md`
 - `docs/USER_JOURNEYS.md`
 - `docs/FUNCTIONAL_REQUIREMENTS.md` — 86 features
-- `docs/MVP_DEFINITION.md` — MVP / v1 / Later tiers
-- `docs/NON_FUNCTIONAL_REQUIREMENTS.md` — 9 NFR groups
-- `docs/BUSINESS_WORKFLOWS.md` — order/payment/inventory/reservation/kitchen rules
-- `docs/PERMISSION_MATRIX.md` — roles × permissions, enforcement rules
+- `docs/MVP_DEFINITION.md`
+- `docs/NON_FUNCTIONAL_REQUIREMENTS.md`
+- `docs/BUSINESS_WORKFLOWS.md`
+- `docs/PERMISSION_MATRIX.md`
+- `docs/DOMAIN_MODELS.md` — entities, invariants, ERD
 
 ## MVP Scope (locked)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
@@ -65,6 +67,13 @@ Step 7 — Permission Matrix (complete, awaiting verification)
 - Middleware chain: requireAuth → requireTenant → requirePermission.
 - Cross-tenant → 404; same-tenant permission failure → 403 with PERMISSION_DENIED.
 - Frontend matrix is UX only; backend is authoritative.
+
+## Locked Domain Invariants
+- Every tenant row carries `restaurant_id`; branch rows carry `branch_id` too.
+- Append-only: order_events, payment_events, reservation_events, stock_movements, audit_logs.
+- Historical snapshot rule on orders/order_items/reservation state.
+- 8 business-critical unique constraints listed in `docs/DOMAIN_MODELS.md` §11.7.
+- Soft delete on restaurants, menu_items, branches, ingredients, suppliers.
 
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
