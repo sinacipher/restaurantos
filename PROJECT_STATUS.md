@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 4 — MVP Definition (complete, awaiting verification)
+Step 5 — Non-Functional Requirements (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -9,9 +9,10 @@ Step 4 — MVP Definition (complete, awaiting verification)
 - Step 2 — User Journeys
 - Step 3 — Functional Requirements
 - Step 4 — MVP Definition
+- Step 5 — Non-Functional Requirements
 
 ## Pending Steps
-- Steps 5–100 per master roadmap
+- Steps 6–100 per master roadmap
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -38,6 +39,7 @@ Step 4 — MVP Definition (complete, awaiting verification)
 - `docs/USER_JOURNEYS.md`
 - `docs/FUNCTIONAL_REQUIREMENTS.md` — 86 features
 - `docs/MVP_DEFINITION.md` — MVP / v1 / Later tiers
+- `docs/NON_FUNCTIONAL_REQUIREMENTS.md` — 9 NFR groups with measurable targets
 
 ## MVP Scope (locked)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
@@ -49,7 +51,8 @@ MVP acceptance test defined in `docs/MVP_DEFINITION.md`.
 - Ably free tier message counting includes fan-out delivery.
 - Cloudinary credits consumed by transformations + storage + bandwidth together.
 - Multi-machine edit conflicts if pull/push discipline is skipped.
-- Risk of scope creep if v1 features leak into Phase 1–6 work.
+- Scope creep risk: v1 features leaking into Phase 1–6 work.
+- Risk of editing the wrong `PROJECT_STATUS.md` — enforced root-only rule.
 
 ## Test Results
 - None yet
