@@ -1,13 +1,14 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 0 — Project Kickoff (in progress)
+Step 1 — User Personas (complete, awaiting verification)
 
 ## Completed Steps
-- None yet
+- Step 0 — Project Kickoff
+- Step 1 — User Personas
 
 ## Pending Steps
-- Steps 1–100 per master roadmap
+- Steps 2–100 per master roadmap
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -16,6 +17,7 @@ Step 0 — Project Kickoff (in progress)
 - One Neon project, one primary branch, one database.
 - Stack: React, Vite, TypeScript, Tailwind, Express, Drizzle, Better Auth, Ably, Cloudinary, Resend, Stripe Test Mode.
 - Windows 11 + CMD + Notepad only.
+- Multi-machine: Git + private GitHub repo. Pull on start, commit+push on stop. `.env` never committed.
 
 ## Free-Tier Planning Ceilings (verified 2026-11-09)
 | Service | Planned ceiling |
@@ -27,11 +29,23 @@ Step 0 — Project Kickoff (in progress)
 | Resend Free | 3,000 emails/mo, 100 emails/day |
 | Stripe Test Mode | Test keys only, no real money |
 
+## Personas Defined
+- Platform Administrator
+- Restaurant Owner
+- Restaurant Manager
+- Cashier
+- Kitchen Staff
+- Inventory Manager
+- Registered Customer
+- Guest Customer
+See `docs/PERSONAS.md`.
+
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
 - Neon scale-to-zero causes first-connection delay after 5 min inactivity.
 - Ably free tier message counting includes fan-out delivery.
-- Cloudinary credits are consumed by transformations + storage + bandwidth together.
+- Cloudinary credits consumed by transformations + storage + bandwidth together.
+- Multi-machine edit conflicts if pull/push discipline is skipped.
 
 ## Test Results
 - None yet
