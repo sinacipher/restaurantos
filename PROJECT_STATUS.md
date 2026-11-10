@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 28 — Seed System (complete, awaiting verification)
+Step 29 — Tenant Resolution Middleware (complete)
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -24,7 +24,7 @@ Step 28 — Seed System (complete, awaiting verification)
 - Step 26 — Better Auth Configuration
 - Step 27 — Core Domain Schema
 - Step 28 — Seed System
-
+- Step 29 — Tenant Resolution Middleware (complete)
 ## Pending Steps
 - Steps 29–100
 
