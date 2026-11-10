@@ -76,7 +76,7 @@ export function DashboardPage() {
                 </div>
                 <Button
                   className="mt-6 w-full"
-                  onClick={() => alert(`Admin dashboard for ${m.name} will be built in Step 38.`)}
+                  onClick={() => navigate(`/admin/${m.restaurantId}`)}
                 >
                   Manage Restaurant
                 </Button>

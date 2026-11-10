@@ -3,6 +3,8 @@ import { LoginPage } from './features/auth/LoginPage';
 import { SignupPage } from './features/auth/SignupPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { AdminLayout } from './components/layout/AdminLayout';
+import { AdminDashboardPage } from './features/dashboard/AdminDashboardPage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -11,6 +13,22 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       { path: '/', element: <DashboardPage /> },
+      {
+        path: '/admin/:restaurantId',
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminDashboardPage /> },
+          // Placeholders for future steps
+          { path: 'orders', element: <div className="p-8">Orders</div> },
+          { path: 'menu', element: <div className="p-8">Menu</div> },
+          { path: 'kitchen', element: <div className="p-8">Kitchen</div> },
+          { path: 'reservations', element: <div className="p-8">Reservations</div> },
+          { path: 'inventory', element: <div className="p-8">Inventory</div> },
+          { path: 'customers', element: <div className="p-8">Customers</div> },
+          { path: 'analytics', element: <div className="p-8">Analytics</div> },
+          { path: 'settings', element: <div className="p-8">Settings</div> },
+        ],
+      },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },
