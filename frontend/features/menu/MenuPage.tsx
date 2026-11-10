@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Pencil } from 'lucide-react';
 
 interface MenuItem {
   id: string;
@@ -30,8 +30,10 @@ export function MenuPage() {
   const queryClient = useQueryClient();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
+  // Form state
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -49,30 +51,43 @@ export function MenuPage() {
     },
   });
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch('/api/v1/menu/items', {
-        method: 'POST',
+      const isEditing = !!editingItem;
+      const url = isEditing ? `/api/v1/menu/items/${editingItem.id}` : '/api/v1/menu/items';
+      const method = isEditing ? 'PATCH' : 'POST';
+      
+      const body = isEditing 
+        ? { name, description, basePriceMinor: Math.round(parseFloat(price) * 100) }
+        : { categoryId, name, description, basePriceMinor: Math.round(parseFloat(price) * 100) };
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json', 'x-restaurant-id': restaurantId! },
-        body: JSON.stringify({
-          categoryId,
-          name,
-          description,
-          basePriceMinor: Math.round(parseFloat(price) * 100),
-        }),
+        body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error('Failed to create item');
+      if (!res.ok) throw new Error(`Failed to ${isEditing ? 'update' : 'create'} item`);
       return res.json();
     },
     onSuccess: () => {
-      toast.success('Item created successfully');
+      toast.success(editingItem ? 'Item updated' : 'Item created');
       queryClient.invalidateQueries({ queryKey: ['menu', restaurantId] });
-      setIsModalOpen(false);
-      setName(''); setDescription(''); setPrice(''); setCategoryId('');
+      closeModal();
     },
-    onError: () => {
-      toast.error('Failed to create item');
+    onError: () => toast.error('Failed to save item'),
+  });
+
+  const toggleAvailabilityMutation = useMutation({
+    mutationFn: async ({ id, isAvailable }: { id: string; isAvailable: boolean }) => {
+      const res = await fetch(`/api/v1/menu/items/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-restaurant-id': restaurantId! },
+        body: JSON.stringify({ isAvailable }),
+      });
+      if (!res.ok) throw new Error('Failed to toggle availability');
     },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['menu', restaurantId] }),
+    onError: () => toast.error('Failed to update status'),
   });
 
   const deleteMutation = useMutation({
@@ -88,10 +103,29 @@ export function MenuPage() {
       queryClient.invalidateQueries({ queryKey: ['menu', restaurantId] });
       setItemToDelete(null);
     },
-    onError: () => {
-      toast.error('Failed to delete item');
-    },
+    onError: () => toast.error('Failed to delete item'),
   });
+
+  const openCreateModal = () => {
+    setEditingItem(null);
+    setName(''); setDescription(''); setPrice(''); setCategoryId('');
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (item: MenuItem, catId: string) => {
+    setEditingItem(item);
+    setName(item.name);
+    setDescription(item.description || '');
+    setPrice((item.basePriceMinor / 100).toFixed(2));
+    setCategoryId(catId);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingItem(null);
+    setName(''); setDescription(''); setPrice(''); setCategoryId('');
+  };
 
   if (isLoading) return <div className="p-8">Loading menu...</div>;
 
@@ -103,7 +137,7 @@ export function MenuPage() {
             <h1 className="text-3xl font-bold text-ink-900">Menu</h1>
             <p className="text-ink-500 mt-1">Manage your categories and items.</p>
           </div>
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={openCreateModal}>
             <Plus className="h-4 w-4 mr-2" /> New Item
           </Button>
         </div>
@@ -118,13 +152,17 @@ export function MenuPage() {
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium text-ink-900">{item.name}</h3>
                       <div className="flex gap-2 items-center">
-                        <Badge variant={item.isAvailable ? 'success' : 'danger'}>
-                          {item.isAvailable ? 'Available' : 'Sold Out'}
-                        </Badge>
                         <button
-                          onClick={() => setItemToDelete(item.id)}
-                          className="text-ink-400 hover:text-danger transition-colors"
+                          onClick={() => toggleAvailabilityMutation.mutate({ id: item.id, isAvailable: !item.isAvailable })}
                         >
+                          <Badge variant={item.isAvailable ? 'success' : 'danger'} className="cursor-pointer">
+                            {item.isAvailable ? 'Available' : 'Sold Out'}
+                          </Badge>
+                        </button>
+                        <button onClick={() => openEditModal(item, category.id)} className="text-ink-400 hover:text-ink-700 ml-2">
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => setItemToDelete(item.id)} className="text-ink-400 hover:text-danger">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -143,30 +181,29 @@ export function MenuPage() {
         </div>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Item">
-        <form
-          onSubmit={(e) => { e.preventDefault(); createMutation.mutate(); }}
-          className="space-y-4"
-        >
-          <div>
-            <label className="text-sm font-medium text-ink-700 block mb-1">Category</label>
-            <select
-              className="w-full h-10 rounded-md border border-ink-300 px-3 text-sm focus:ring-brand-500 focus:border-brand-500"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              required
-            >
-              <option value="">Select a category...</option>
-              {menu?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
+      <Modal isOpen={isModalOpen} onClose={closeModal} title={editingItem ? 'Edit Item' : 'Add New Item'}>
+        <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(); }} className="space-y-4">
+          {!editingItem && (
+            <div>
+              <label className="text-sm font-medium text-ink-700 block mb-1">Category</label>
+              <select
+                className="w-full h-10 rounded-md border border-ink-300 px-3 text-sm focus:ring-brand-500 focus:border-brand-500"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                required
+              >
+                <option value="">Select a category...</option>
+                {menu?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+          )}
           <Input label="Item Name" value={name} onChange={e => setName(e.target.value)} required />
           <Input label="Description" value={description} onChange={e => setDescription(e.target.value)} />
           <Input label="Price (e.g. 12.50)" type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} required />
           
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button type="submit" isLoading={createMutation.isPending}>Save Item</Button>
+            <Button type="button" variant="secondary" onClick={closeModal}>Cancel</Button>
+            <Button type="submit" isLoading={saveMutation.isPending}>Save Item</Button>
           </div>
         </form>
       </Modal>

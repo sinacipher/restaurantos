@@ -69,7 +69,6 @@ menuRouter.post('/items', async (req, res, next) => {
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) throw new ValidationError('Invalid item data');
 
-    // Verify category belongs to this restaurant
     const category = await db.query.menuCategories.findFirst({
       where: and(
         eq(menuCategories.id, parsed.data.categoryId),
@@ -86,11 +85,44 @@ menuRouter.post('/items', async (req, res, next) => {
         name: parsed.data.name,
         description: parsed.data.description,
         basePriceMinor: parsed.data.basePriceMinor,
-        currency: 'USD', // Hardcoded for now, should pull from restaurant settings
+        currency: 'USD',
       })
       .returning();
 
     res.status(201).json({ data: item });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/v1/menu/items/:id
+menuRouter.patch('/items/:id', async (req, res, next) => {
+  try {
+    const restaurantId = req.tenant!.restaurantId;
+    const itemId = req.params['id'] as string;
+
+    const schema = z.object({
+      name: z.string().min(1).optional(),
+      description: z.string().optional(),
+      basePriceMinor: z.number().int().min(0).optional(),
+      isAvailable: z.boolean().optional(),
+    });
+    
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) throw new ValidationError('Invalid update data');
+
+    const [updated] = await db
+      .update(menuItems)
+      .set(parsed.data)
+      .where(and(eq(menuItems.id, itemId), eq(menuItems.restaurantId, restaurantId)))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Item not found' } });
+      return;
+    }
+
+    res.json({ data: updated });
   } catch (err) {
     next(err);
   }
