@@ -61,7 +61,6 @@ export function OrdersPage() {
             return old.map(o => o.id === msg.data.id ? { ...o, state: msg.data.state } : o);
           });
         });
-
       } catch (err) {
         console.warn('Ably connection failed (falling back to polling)', err);
       }
@@ -70,7 +69,6 @@ export function OrdersPage() {
     setupAbly();
 
     return () => {
-      isMounted = false;
       if (channel) channel.unsubscribe();
       disconnectAbly();
     };
