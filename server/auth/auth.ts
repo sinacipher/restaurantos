@@ -21,4 +21,9 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
   },
+  advanced: {
+    database: {
+      generateId: () => crypto.randomUUID(),
+    },
+  },
 });
