@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { eq, inArray, desc } from 'drizzle-orm';
+import { eq, inArray, desc, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../../database/client.js';
 import { restaurants } from '../../database/schema/restaurants.js';
@@ -17,7 +17,6 @@ export const ordersRouter = Router();
 ordersRouter.get('/orders', requireAuth, requireTenant, async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
-
     const restaurantOrders = await db.query.orders.findMany({
       where: eq(orders.restaurantId, restaurantId),
       orderBy: [desc(orders.createdAt)],
@@ -39,6 +38,55 @@ ordersRouter.get('/orders', requireAuth, requireTenant, async (req, res, next) =
     }));
 
     res.json({ data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/v1/orders/:id/status
+ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req, res, next) => {
+  try {
+    const restaurantId = req.tenant!.restaurantId;
+    const orderId = req.params['id'] as string;
+    
+    const schema = z.object({
+      state: z.enum(['accepted', 'preparing', 'ready', 'completed', 'cancelled', 'rejected'])
+    });
+    
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) throw new ValidationError('Invalid state');
+
+    const order = await db.query.orders.findFirst({
+      where: and(eq(orders.id, orderId), eq(orders.restaurantId, restaurantId)),
+    });
+
+    if (!order) throw new NotFoundError('Order not found');
+
+    // State machine validation
+    const validTransitions: Record<string, string[]> = {
+      pending_confirmation: ['accepted', 'rejected', 'cancelled'],
+      accepted: ['preparing', 'cancelled'],
+      preparing: ['ready', 'cancelled'],
+      ready: ['completed'],
+      completed: [],
+      rejected: [],
+      cancelled: [],
+    };
+
+    const currentState = order.state;
+    const newState = parsed.data.state;
+
+    if (!validTransitions[currentState]?.includes(newState)) {
+      throw new ValidationError(`Cannot transition from ${currentState} to ${newState}`);
+    }
+
+    const [updated] = await db
+      .update(orders)
+      .set({ state: newState as any })
+      .where(eq(orders.id, orderId))
+      .returning();
+
+    res.json({ data: updated });
   } catch (err) {
     next(err);
   }
