@@ -8,6 +8,8 @@ import { AdminDashboardPage } from './features/dashboard/AdminDashboardPage';
 import { MenuPage } from './features/menu/MenuPage';
 import { StorefrontPage } from './features/storefront/StorefrontPage';
 import { QrCodePage } from './features/qr/QrCodePage';
+import { OrdersPage } from './features/orders/OrdersPage';
+
 
 
 export const router = createBrowserRouter([
@@ -24,7 +26,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminDashboardPage /> },
           // Placeholders for future steps
-          { path: 'orders', element: <div className="p-8">Orders</div> },
+          { path: 'orders', element: <OrdersPage /> },
           { path: 'menu', element: <MenuPage /> },
           { path: 'kitchen', element: <div className="p-8">Kitchen</div> },
           { path: 'reservations', element: <div className="p-8">Reservations</div> },
