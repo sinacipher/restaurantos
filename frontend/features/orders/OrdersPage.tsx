@@ -43,7 +43,6 @@ export function OrdersPage() {
 
   // Connect to Ably (will silently fail if disabled in .env)
   useEffect(() => {
-    let isMounted = true;
     let channel: any;
 
     async function setupAbly() {
