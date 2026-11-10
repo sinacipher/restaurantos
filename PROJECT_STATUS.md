@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 26 — Better Auth Configuration (complete, awaiting verification)
+Step 27 — Core Domain Schema (complete)
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -22,7 +22,7 @@ Step 26 — Better Auth Configuration (complete, awaiting verification)
 - Step 24 — Database Conventions
 - Step 25 — Authentication Schema
 - Step 26 — Better Auth Configuration
-
+- Step 27 — Core Domain Schema (complete)
 ## Pending Steps
 - Steps 27–100
 
