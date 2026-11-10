@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 34 — Menu Database Schema (complete)
+Step 35 — Seed Menu Data (complete)
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -28,6 +28,8 @@ Step 34 — Menu Database Schema (complete)
 - Step 32 — Memberships & Dashboard Context (complete)
 - Step 33 — Protected Navigation (Admin Shell) (complete)
 - Step 34 — Menu Database Schema (complete)
+- Step 35 — Seed Menu Data (complete)
+
 ## Pending Steps
 - Steps 29–100
 

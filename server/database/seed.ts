@@ -4,6 +4,7 @@ import { auth } from '../auth/auth.js';
 import { restaurants, restaurantSettings } from './schema/restaurants.js';
 import { branches } from './schema/branches.js';
 import { restaurantMemberships } from './schema/memberships.js';
+import { menuCategories, menuItems, modifierGroups, modifiers, menuItemModifierGroups } from './schema/menu.js';
 import { eq } from 'drizzle-orm';
 
 async function seed() {
@@ -33,66 +34,83 @@ async function seed() {
   for (const data of demoRestaurants) {
     console.log(`Processing ${data.name}...`);
 
-    // 1. Check if restaurant already exists
-    const existing = await db.query.restaurants.findFirst({
+    let restaurant = await db.query.restaurants.findFirst({
       where: eq(restaurants.slug, data.slug),
     });
 
-    if (existing) {
-      console.log(`- ${data.name} already exists, skipping.`);
-      continue;
+    if (!restaurant) {
+      console.log(`- Creating owner ${data.ownerEmail}...`);
+      const { user } = await auth.api.signUpEmail({
+        body: { email: data.ownerEmail, password: 'password123', name: data.ownerName },
+      });
+
+      console.log(`- Creating restaurant ${data.slug}...`);
+      const [newRest] = await db.insert(restaurants).values({
+        slug: data.slug, name: data.name, currency: data.currency, timezone: data.timezone, email: data.ownerEmail,
+      }).returning();
+      if (!newRest) throw new Error('Failed to create restaurant');
+      restaurant = newRest;
+
+      await db.insert(restaurantSettings).values({ restaurantId: restaurant.id });
+      await db.insert(branches).values({ restaurantId: restaurant.id, name: data.branchName, code: 'MAIN', city: 'City', country: 'US' });
+      await db.insert(restaurantMemberships).values({ restaurantId: restaurant.id, userId: user.id, role: 'owner', status: 'active' });
     }
 
-    // 2. Create User (Owner) using Better Auth
-    console.log(`- Creating owner ${data.ownerEmail}...`);
-    const { user } = await auth.api.signUpEmail({
-      body: {
-        email: data.ownerEmail,
-        password: 'password123', // Standard demo password
-        name: data.ownerName,
-      },
+    // Check if menu already exists
+    const existingMenu = await db.query.menuCategories.findFirst({
+      where: eq(menuCategories.restaurantId, restaurant.id),
     });
 
-    // 3. Create Restaurant
-    console.log(`- Creating restaurant ${data.slug}...`);
-    const [restaurant] = await db
-      .insert(restaurants)
-      .values({
-        slug: data.slug,
-        name: data.name,
-        currency: data.currency,
-        timezone: data.timezone,
-        email: data.ownerEmail,
-      })
-      .returning();
+    if (!existingMenu) {
+      console.log(`- Seeding menu for ${data.name}...`);
+      const [cat1] = await db.insert(menuCategories).values({ restaurantId: restaurant.id, name: 'Mains', position: 1 }).returning();
+      const [cat2] = await db.insert(menuCategories).values({ restaurantId: restaurant.id, name: 'Drinks', position: 2 }).returning();
+      
+      if (!cat1 || !cat2) throw new Error('Failed to create categories');
 
-    if (!restaurant) throw new Error('Failed to create restaurant');
+      // Modifier Group: Size
+      const [sizeGroup] = await db.insert(modifierGroups).values({
+        restaurantId: restaurant.id, name: 'Size', minSelect: 1, maxSelect: 1, isRequired: true
+      }).returning();
+      
+      if (sizeGroup) {
+        await db.insert(modifiers).values([
+          { modifierGroupId: sizeGroup.id, name: 'Regular', priceDeltaMinor: 0 },
+          { modifierGroupId: sizeGroup.id, name: 'Large', priceDeltaMinor: 200 }, // +$2.00
+        ]);
+      }
 
-    // 4. Create Settings
-    await db.insert(restaurantSettings).values({
-      restaurantId: restaurant.id,
-      paymentPolicy: 'pay_at_checkout',
-    });
+      // Create a Menu Item (Pizza / Sushi)
+      const itemName = data.slug === 'demo-a' ? 'Margherita Pizza' : 'Salmon Nigiri';
+      const [item] = await db.insert(menuItems).values({
+        restaurantId: restaurant.id,
+        categoryId: cat1.id,
+        name: itemName,
+        description: 'Delicious classic.',
+        basePriceMinor: 1000,
+        currency: restaurant.currency,
+        dietaryLabels: ['vegetarian'],
+      }).returning();
 
-    // 5. Create Branch
-    console.log(`- Creating branch ${data.branchName}...`);
-    await db.insert(branches).values({
-      restaurantId: restaurant.id,
-      name: data.branchName,
-      code: 'MAIN',
-      city: data.timezone.split('/')[1] || 'Unknown',
-      country: 'US',
-    });
+      if (!item) throw new Error('Failed to create item');
 
-    // 6. Create Membership (Owner)
-    await db.insert(restaurantMemberships).values({
-      restaurantId: restaurant.id,
-      userId: user.id,
-      role: 'owner',
-      status: 'active',
-    });
+      // Link Size group to Item
+      if (sizeGroup) {
+        await db.insert(menuItemModifierGroups).values({ menuItemId: item.id, modifierGroupId: sizeGroup.id });
+      }
 
-    console.log(`✅ ${data.name} seeded successfully!`);
+      // Create a Drink
+      await db.insert(menuItems).values({
+        restaurantId: restaurant.id,
+        categoryId: cat2.id,
+        name: 'Cola',
+        basePriceMinor: 300,
+        currency: restaurant.currency,
+      });
+      console.log(`✅ Menu seeded for ${data.name}`);
+    } else {
+      console.log(`- Menu for ${data.name} already exists, skipping.`);
+    }
   }
 
   console.log('🌱 Seed complete.');
