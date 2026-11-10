@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 36 — Admin Menu API & UI (complete)
+Step 37 complete
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -30,7 +30,7 @@ Step 36 — Admin Menu API & UI (complete)
 - Step 34 — Menu Database Schema (complete)
 - Step 35 — Seed Menu Data (complete)
 - Step 36 — Admin Menu API & UI (complete)
-
+- Step 37 complete
 
 
 ## Pending Steps
