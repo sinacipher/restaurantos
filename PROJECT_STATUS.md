@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 25 — Authentication Schema (complete, awaiting verification)
+Step 26 — Better Auth Configuration (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -21,9 +21,10 @@ Step 25 — Authentication Schema (complete, awaiting verification)
 - Step 23 — Drizzle Configuration
 - Step 24 — Database Conventions
 - Step 25 — Authentication Schema
+- Step 26 — Better Auth Configuration
 
 ## Pending Steps
-- Steps 26–100
+- Steps 27–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -44,6 +45,7 @@ Step 25 — Authentication Schema (complete, awaiting verification)
 - **Drizzle client:** `db` in `server/database/client.ts`.
 - **DB Conventions:** UUIDs for IDs, integer minor units for money, UTC timestamps.
 - **Auth tables:** `users`, `sessions`, `accounts`, `verifications` created.
+- **Better Auth:** `auth` instance in `server/auth/auth.ts`, mounted at `/api/v1/auth`.
 
 ## Free-Tier Planning Ceilings
 (Verified 2026-11-09 — Vercel, Neon, Ably, Cloudinary, Resend, Stripe Test)
@@ -55,14 +57,16 @@ Step 25 — Authentication Schema (complete, awaiting verification)
 - **Tokens:** Tailwind v4 via `@theme`.
 - **Components:** `Button`, `Input`, `Card`, `Badge` + `cn()` utility.
 
-## Backend Backbone (Step 18–25)
+## Backend Backbone (Step 18–26)
 - `server/config/env.ts` — Zod-validated env.
 - `server/shared/errors.ts` — AppError hierarchy.
 - `server/middleware/*` — requestId, errorHandler.
 - `server/app.ts` — `buildApp()`.
 - `api/index.ts` — exports app.
 - `server/database/client.ts` — Drizzle instance.
-- `server/database/schema/*` — Auth tables (`users`, `sessions`, `accounts`, `verifications`).
+- `server/database/schema/*` — Auth tables.
+- `server/auth/auth.ts` — Better Auth instance.
+- `server/modules/auth/routes.ts` — Better Auth Express handler.
 - `drizzle.config.ts` — migration configuration.
 
 ## Installed Dependencies
@@ -77,14 +81,6 @@ Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9
 - `npm audit fix --force` can break working setup — never run it.
 
 ## Test Results
-- Step 15: `npx tsc --noEmit` → 0 errors
-- Step 16: `npm run lint` → 0 errors
-- Step 17: `.env.local` ignored
-- Step 18: `npx tsc --noEmit` → 0 errors
-- Step 19: `vercel dev --local` → Frontend + `/api/v1/health` verified
-- Step 20: Design system renders correctly
-- Step 21: Neon connection verified (A + B)
-- Step 22: Drizzle connection verified
-- Step 23: `npm run db:generate` → "No schema changes"
-- Step 24: `npx tsc --noEmit` → 0 errors
-- Step 25: `npm run db:migrate` → applied successfully (pending verification)
+- Step 15–24: All green (TS + Lint).
+- Step 25: Migration applied successfully.
+- Step 26: `npx tsc --noEmit` → 0 errors (pending).

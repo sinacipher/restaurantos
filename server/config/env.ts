@@ -1,4 +1,9 @@
 import { z } from 'zod';
+import { config } from 'dotenv';
+import { resolve } from 'node:path';
+
+// Load .env.local for local development (safely skipped in production if file is missing)
+config({ path: resolve(process.cwd(), '.env.local') });
 
 const booleanish = z
   .string()
@@ -9,6 +14,7 @@ const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  // ... (leave the rest of the schema exactly as it was)
   DATABASE_URL_UNPOOLED: z.string().min(1, 'DATABASE_URL_UNPOOLED is required'),
 
   BETTER_AUTH_SECRET: z.string().min(32, 'BETTER_AUTH_SECRET must be 32+ chars'),
