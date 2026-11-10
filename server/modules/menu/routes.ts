@@ -65,6 +65,7 @@ menuRouter.post('/items', async (req, res, next) => {
       name: z.string().min(1),
       description: z.string().optional(),
       basePriceMinor: z.number().int().min(0),
+      imageUrl: z.string().url().optional().nullable(),
     });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) throw new ValidationError('Invalid item data');
@@ -85,6 +86,7 @@ menuRouter.post('/items', async (req, res, next) => {
         name: parsed.data.name,
         description: parsed.data.description,
         basePriceMinor: parsed.data.basePriceMinor,
+        imageUrl: parsed.data.imageUrl,
         currency: 'USD',
       })
       .returning();
@@ -106,6 +108,7 @@ menuRouter.patch('/items/:id', async (req, res, next) => {
       description: z.string().optional(),
       basePriceMinor: z.number().int().min(0).optional(),
       isAvailable: z.boolean().optional(),
+      imageUrl: z.string().url().optional().nullable(),
     });
     
     const parsed = schema.safeParse(req.body);

@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { ImageUpload } from '../../components/ui/ImageUpload';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 
 interface MenuItem {
@@ -17,6 +18,7 @@ interface MenuItem {
   basePriceMinor: number;
   currency: string;
   isAvailable: boolean;
+  imageUrl: string | null;
 }
 
 interface MenuCategory {
@@ -38,6 +40,7 @@ export function MenuPage() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   const { data: menu, isLoading } = useQuery({
     queryKey: ['menu', restaurantId],
@@ -58,8 +61,8 @@ export function MenuPage() {
       const method = isEditing ? 'PATCH' : 'POST';
       
       const body = isEditing 
-        ? { name, description, basePriceMinor: Math.round(parseFloat(price) * 100) }
-        : { categoryId, name, description, basePriceMinor: Math.round(parseFloat(price) * 100) };
+        ? { name, description, imageUrl: imageUrl || null, basePriceMinor: Math.round(parseFloat(price) * 100) }
+        : { categoryId, name, description, imageUrl: imageUrl || null, basePriceMinor: Math.round(parseFloat(price) * 100) };
 
       const res = await fetch(url, {
         method,
@@ -108,7 +111,7 @@ export function MenuPage() {
 
   const openCreateModal = () => {
     setEditingItem(null);
-    setName(''); setDescription(''); setPrice(''); setCategoryId('');
+    setName(''); setDescription(''); setPrice(''); setCategoryId(''); setImageUrl('');
     setIsModalOpen(true);
   };
 
@@ -118,13 +121,14 @@ export function MenuPage() {
     setDescription(item.description || '');
     setPrice((item.basePriceMinor / 100).toFixed(2));
     setCategoryId(catId);
+    setImageUrl(item.imageUrl || '');
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingItem(null);
-    setName(''); setDescription(''); setPrice(''); setCategoryId('');
+    setName(''); setDescription(''); setPrice(''); setCategoryId(''); setImageUrl('');
   };
 
   if (isLoading) return <div className="p-8">Loading menu...</div>;
@@ -149,6 +153,9 @@ export function MenuPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 {category.items.map((item) => (
                   <Card key={item.id} className="p-4 flex flex-col">
+                    {item.imageUrl && (
+                      <img src={item.imageUrl} alt={item.name} className="w-full h-32 object-cover rounded-md mb-3" />
+                    )}
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium text-ink-900">{item.name}</h3>
                       <div className="flex gap-2 items-center">
@@ -197,9 +204,12 @@ export function MenuPage() {
               </select>
             </div>
           )}
+          
           <Input label="Item Name" value={name} onChange={e => setName(e.target.value)} required />
           <Input label="Description" value={description} onChange={e => setDescription(e.target.value)} />
           <Input label="Price (e.g. 12.50)" type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} required />
+          
+          <ImageUpload value={imageUrl} onChange={setImageUrl} restaurantId={restaurantId!} />
           
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="secondary" onClick={closeModal}>Cancel</Button>
