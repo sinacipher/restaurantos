@@ -6,10 +6,12 @@ import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminDashboardPage } from './features/dashboard/AdminDashboardPage';
 import { MenuPage } from './features/menu/MenuPage';
+import { StorefrontPage } from './features/storefront/StorefrontPage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <SignupPage /> },
+  { path: '/r/:slug', element: <StorefrontPage /> },
   {
     element: <ProtectedRoute />,
     children: [

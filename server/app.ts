@@ -8,6 +8,8 @@ import { healthRouter } from './modules/health/routes.js';
 import { auth } from './auth/auth.js';
 import { restaurantsRouter } from './modules/restaurants/routes.js';
 import { menuRouter } from './modules/menu/routes.js';
+import { publicRouter } from './modules/public/routes.js';
+
 
 export function buildApp(): Express {
   const app = express();
@@ -20,6 +22,7 @@ export function buildApp(): Express {
   app.use(cookieParser());
   app.use('/api/v1/restaurants', restaurantsRouter);
   app.use('/api/v1/menu', menuRouter);
+  app.use('/api/v1/public', publicRouter);
 
 
   // Auth & Public routes
