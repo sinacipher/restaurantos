@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 39 complete
+Step 40 complete
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -33,7 +33,7 @@ Step 39 complete
 - Step 37 complete
 - Step 38 complete
 - Step 39 complete
-- 
+- Step 40 complete
 - 
 
 
