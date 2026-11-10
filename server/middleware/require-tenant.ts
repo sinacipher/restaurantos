@@ -9,12 +9,13 @@ export const requireTenant: RequestHandler = async (req, _res, next) => {
   try {
     if (!req.user) throw new Error('requireTenant must be used after requireAuth');
 
-    let restaurantId = req.params.restaurantId;
-    
+    let restaurantId = req.params['restaurantId'] as string | undefined;
+    const slug = req.params['slug'] as string | undefined;
+
     // If the URL uses a slug (like the public storefront), look up the ID first
-    if (!restaurantId && req.params.slug) {
+    if (!restaurantId && slug) {
       const restaurant = await db.query.restaurants.findFirst({
-        where: eq(restaurants.slug, req.params.slug),
+        where: eq(restaurants.slug, slug),
       });
       if (restaurant) restaurantId = restaurant.id;
     }

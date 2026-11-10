@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { db } from './client.js';
 import { auth } from '../auth/auth.js';
 import { restaurants, restaurantSettings } from './schema/restaurants.js';
