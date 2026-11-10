@@ -7,6 +7,8 @@ import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminDashboardPage } from './features/dashboard/AdminDashboardPage';
 import { MenuPage } from './features/menu/MenuPage';
 import { StorefrontPage } from './features/storefront/StorefrontPage';
+import { QrCodePage } from './features/qr/QrCodePage';
+
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -30,6 +32,7 @@ export const router = createBrowserRouter([
           { path: 'customers', element: <div className="p-8">Customers</div> },
           { path: 'analytics', element: <div className="p-8">Analytics</div> },
           { path: 'settings', element: <div className="p-8">Settings</div> },
+          { path: 'qr-codes', element: <QrCodePage /> },
         ],
       },
     ],

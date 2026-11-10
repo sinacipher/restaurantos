@@ -10,6 +10,7 @@ import {
   BarChart3,
   Settings,
   ArrowLeft,
+  QrCode,
 } from 'lucide-react';
 import { authClient } from '../../lib/auth-client';
 import { Button } from '../ui/Button';
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Customers', href: '/customers', icon: Users },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'QR Codes', href: '/qr-codes', icon: QrCode },
 ];
 
 export function AdminLayout() {
