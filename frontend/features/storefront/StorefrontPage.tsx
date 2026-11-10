@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { Clock, MapPin, Phone, ShoppingBag, Plus, Minus, Trash2 } from 'lucide-react';
+import { Clock, MapPin, Phone, ShoppingBag, Plus, Minus, Trash2, Search, X } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { useCartStore, type SelectedModifier } from '../../stores/cart';
+import { cn } from '../../lib/utils';
 
 interface Modifier {
   id: string;
@@ -29,6 +31,7 @@ interface MenuItem {
   basePriceMinor: number;
   currency: string;
   modifierGroups: ModifierGroup[];
+  imageUrl: string | null;
 }
 
 interface MenuCategory {
@@ -50,6 +53,10 @@ export function StorefrontPage() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
   
+  // Search & Filter states
+  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+
   const cart = useCartStore();
 
   const { data: restaurant, isLoading: loadingRest } = useQuery({
@@ -71,6 +78,30 @@ export function StorefrontPage() {
       return json.data as MenuCategory[];
     },
   });
+
+  // Filter menu based on search and category
+  const filteredMenu = useMemo(() => {
+    if (!menu) return [];
+    
+    let result = menu;
+    
+    if (activeCategory !== 'all') {
+      result = result.filter(c => c.id === activeCategory);
+    }
+
+    if (search.trim()) {
+      const query = search.toLowerCase();
+      result = result.map(category => ({
+        ...category,
+        items: category.items.filter(item => 
+          item.name.toLowerCase().includes(query) || 
+          (item.description && item.description.toLowerCase().includes(query))
+        )
+      })).filter(category => category.items.length > 0); // Hide empty categories
+    }
+
+    return result;
+  }, [menu, search, activeCategory]);
 
   if (loadingRest) return <div className="p-8 text-center text-ink-500">Loading...</div>;
   if (!restaurant) return <div className="p-8 text-center text-ink-500">Restaurant not found.</div>;
@@ -114,35 +145,100 @@ export function StorefrontPage() {
 
       {/* Info Bar */}
       <div className="max-w-3xl mx-auto -mt-8 relative z-10 px-4">
-        <Card className="p-4 flex flex-wrap gap-6 items-center justify-center text-sm text-ink-600">
+        <Card className="p-4 flex flex-wrap gap-6 items-center justify-center text-sm text-ink-600 shadow-md">
           <div className="flex items-center gap-2"><Clock className="h-4 w-4" /> Open Now</div>
           <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Downtown</div>
           {restaurant.phone && <div className="flex items-center gap-2"><Phone className="h-4 w-4" /> {restaurant.phone}</div>}
         </Card>
       </div>
 
+      {/* Sticky Search & Filters */}
+      <div className="sticky top-0 z-30 bg-ink-50/95 backdrop-blur-md border-b border-ink-200 mt-8 pt-4 pb-4 shadow-sm">
+        <div className="max-w-3xl mx-auto px-4 space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+            <input
+              type="text"
+              placeholder="Search the menu..."
+              className="w-full h-10 pl-9 pr-10 rounded-full border border-ink-300 bg-white text-sm focus:ring-brand-500 focus:border-brand-500 transition-shadow"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button 
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <button
+              onClick={() => setActiveCategory('all')}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
+                activeCategory === 'all' 
+                  ? "bg-ink-900 text-white" 
+                  : "bg-white border border-ink-300 text-ink-600 hover:bg-ink-100"
+              )}
+            >
+              All
+            </button>
+            {menu?.map(category => (
+              <button
+                key={category.id}
+                onClick={() => setActiveCategory(category.id)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
+                  activeCategory === category.id 
+                    ? "bg-ink-900 text-white" 
+                    : "bg-white border border-ink-300 text-ink-600 hover:bg-ink-100"
+                )}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Menu Section */}
-      <div className="max-w-3xl mx-auto px-4 mt-12 space-y-10">
+      <div className="max-w-3xl mx-auto px-4 mt-6 space-y-10">
         {loadingMenu ? (
           <p className="text-center text-ink-500">Loading menu...</p>
+        ) : filteredMenu.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-lg font-medium text-ink-900">No items found</p>
+            <p className="text-ink-500 mt-1">Try adjusting your search or category filter.</p>
+            <Button variant="secondary" className="mt-4" onClick={() => { setSearch(''); setActiveCategory('all'); }}>
+              Clear filters
+            </Button>
+          </div>
         ) : (
-          menu?.map((category) => (
+          filteredMenu.map((category) => (
             <div key={category.id}>
               <h2 className="text-2xl font-bold text-ink-900 mb-4 border-b border-ink-200 pb-2">{category.name}</h2>
               <div className="space-y-4">
                 {category.items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center gap-4 bg-white p-4 rounded-lg border border-ink-100 shadow-sm">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-ink-900">{item.name}</h3>
-                      <p className="text-sm text-ink-500 mt-1">{item.description}</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="font-medium text-ink-900 whitespace-nowrap">
-                        {(item.basePriceMinor / 100).toFixed(2)} {item.currency}
-                      </span>
-                      <Button size="sm" onClick={() => handleAddToCart(item)}>
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                  <div key={item.id} className="flex gap-4 bg-white p-4 rounded-lg border border-ink-100 shadow-sm hover:border-ink-300 transition-colors">
+                    {item.imageUrl && (
+                      <img src={item.imageUrl} alt={item.name} className="w-24 h-24 object-cover rounded-md flex-shrink-0" />
+                    )}
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-semibold text-ink-900">{item.name}</h3>
+                        <p className="text-sm text-ink-500 mt-1 line-clamp-2">{item.description}</p>
+                      </div>
+                      <div className="flex justify-between items-end mt-2">
+                        <span className="font-medium text-ink-900">
+                          {(item.basePriceMinor / 100).toFixed(2)} {item.currency}
+                        </span>
+                        <Button size="sm" onClick={() => handleAddToCart(item)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -249,7 +345,6 @@ function CustomizeItemModal({ item, onClose, onAdd }: { item: MenuItem, onClose:
       
       if (selectedInGroup.length >= group.maxSelect) {
         if (group.maxSelect === 1) {
-           // Replace if it's a single-choice group (radio button style)
            const otherMods = selectedMods.filter(m => !group.modifiers.some(gm => gm.id === m.id));
            setSelectedMods([...otherMods, { id: mod.id, name: mod.name, priceMinor: mod.priceDeltaMinor }]);
         }
