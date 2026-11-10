@@ -1,19 +1,10 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 18 — Folder skeleton + Express backbone + env validator (complete, awaiting verification)
+Step 20 — Design System Foundation (complete, awaiting verification)
 
 ## Completed Steps
-- Step 0 — Project Kickoff
-- Step 1 — User Personas
-- Step 2 — User Journeys
-- Step 3 — Functional Requirements
-- Step 4 — MVP Definition
-- Step 5 — Non-Functional Requirements
-- Step 6 — Business Workflows
-- Step 7 — Permission Matrix
-- Step 8 — Domain Models
-- Step 9 — System Architecture
+- Step 0–9 — Planning (Personas, Journeys, Requirements, Workflows, etc.)
 - Step 10 — Environment Inspection (Laptop A + B)
 - Step 11 — Project Initialization
 - Step 12 — Vite + React + TypeScript scaffold
@@ -23,9 +14,11 @@ Step 18 — Folder skeleton + Express backbone + env validator (complete, awaiti
 - Step 16 — ESLint + Prettier
 - Step 17 — Environment variables (leak fixed, Neon password rotated)
 - Step 18 — Folder skeleton + Express backbone + env validator
+- Step 19 — `vercel dev --local` POC (API + Frontend verified locally)
+- Step 20 — Design System Foundation
 
 ## Pending Steps
-- Steps 19–100
+- Steps 21–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -37,94 +30,50 @@ Step 18 — Folder skeleton + Express backbone + env validator (complete, awaiti
 - Multi-machine: Git + private GitHub repo. Pull on start, commit+push on stop. `.env` never committed.
 - `PROJECT_STATUS.md` lives at **project root only**.
 - File creation habit: `type nul > path\FILE.md` then `notepad path\FILE.md`; edit with **Ctrl+S**, never Save As.
-- Notepad editing uses **absolute paths** to prevent directory drift.
 - Single root `package.json` (ESM `"type": "module"`).
-- `.gitattributes` forces LF; `.cmd`/`.bat` keep CRLF.
-- `index.html` at root → `/frontend/main.tsx`; React lives in `frontend/`.
-- Single `tsconfig.json` at root; `build` = `tsc --noEmit && vite build`.
-- **TypeScript pinned to `~5.9.3`**.
-- Express **5.x** installed (async errors auto-bubble).
-- Do **NOT** run `npm audit fix --force`.
-- **All server code imports `env` from `server/config/env.ts` — never `process.env` directly.**
-- **Backend imports use `.js` extensions** (required by ESM in tsx at runtime; tsc tolerates it).
-- **`api/index.ts` is the only Vercel function.** Express routes go inside `server/app.ts`.
+- **TypeScript pinned to `~5.9.3`**. Express **5.x**.
+- **Local dev command:** `vercel dev --local` (requires Admin CMD on Laptop B due to Windows symlink restriction).
+- **Backend imports use `.js` extensions** (ESM).
+- **`api/index.ts` is the only Vercel function.**
 
-## Free-Tier Planning Ceilings (verified 2026-11-09)
-| Service | Planned ceiling |
-|---|---|
-| Vercel Hobby | 1M invocations/mo, 4 active CPU-hrs/mo, 360 GB-hrs provisioned memory |
-| Neon Free | 100 CU-hrs/project/mo, 1 GB storage/project, 5 GB public transfer/project/mo |
-| Ably Free | 6M msgs/mo, 200 concurrent connections, 200 concurrent channels |
-| Cloudinary Free | 25 credits/mo |
-| Resend Free | 3,000 emails/mo, 100 emails/day |
-| Stripe Test Mode | Test keys only, no real money |
-
-## Documents
-- `docs/PERSONAS.md`
-- `docs/USER_JOURNEYS.md`
-- `docs/FUNCTIONAL_REQUIREMENTS.md`
-- `docs/MVP_DEFINITION.md`
-- `docs/NON_FUNCTIONAL_REQUIREMENTS.md`
-- `docs/BUSINESS_WORKFLOWS.md`
-- `docs/PERMISSION_MATRIX.md`
-- `docs/DOMAIN_MODELS.md`
-- `docs/SYSTEM_ARCHITECTURE.md`
+## Free-Tier Planning Ceilings
+(Verified 2026-11-09 — Vercel, Neon, Ably, Cloudinary, Resend, Stripe Test)
 
 ## MVP Scope (locked)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
 
-## Design System (Step 14)
-Tailwind v4 via `@tailwindcss/vite`. Theming in `frontend/index.css` via `@theme {}`.
-- Brand: warm copper (`brand-50`…`brand-900`, primary = `brand-600`)
-- Ink: neutral dark scale (`ink-50`…`ink-950`)
-- Semantic: `success`, `warning`, `danger`
-- Radius: `sm=6px`, `md=10px`, `lg=14px`, `xl=20px`
-
-## TypeScript (Step 15)
-Ultra-strict flags enabled. Aliases `@frontend/*`, `@server/*`, `@shared/*` mirrored in tsconfig + Vite.
-
-## Lint / Format (Step 16)
-ESLint 10 flat config + Prettier. Scripts: `npm run lint`, `npm run format`. Both green.
-
-## Environment (Step 17)
-- `.env.example` tracked — placeholders only (leak fixed in `3041096`).
-- `.env.local` per-laptop, gitignored.
-- Neon password rotated after leak — old credentials dead.
-- `BETTER_AUTH_SECRET` per laptop.
-- Feature flags safe defaults.
+## Design System (Step 14, Step 20)
+- **Tokens:** Tailwind v4 via `@theme` in `frontend/index.css`.
+- **Colors:** `brand` (copper), `ink` (neutral dark), `success`, `warning`, `danger`.
+- **Utilities:** `cn()` (clsx + tailwind-merge) in `frontend/lib/utils.ts`.
+- **Components (`frontend/components/ui/`):**
+  - `Button`: variants (primary, secondary, ghost, danger), sizes (sm, md, lg), loading state.
+  - `Input`: label, error message, focus states, forwardRef.
+  - `Card`: white background, border, shadow.
+  - `Badge`: variants (default, success, warning, danger).
 
 ## Backend Backbone (Step 18)
-- Folder skeleton per `docs/SYSTEM_ARCHITECTURE.md` §2 created.
-- `server/config/env.ts` — Zod-validated env, throws on missing/invalid, exports typed `env`.
-- `server/shared/errors.ts` — `AppError` + subclasses for standard error codes.
-- `server/middleware/request-id.ts` — attaches `X-Request-Id`.
-- `server/middleware/error-handler.ts` — `notFoundHandler` + `errorHandler`, JSON envelope.
-- `server/modules/health/routes.ts` — `GET /` → `{ ok: true, service, version, timestamp }`.
-- `server/app.ts` — `buildApp(): Express`, no `listen()`.
-- `api/index.ts` — imports `buildApp`, exports app as default. **Only** Vercel function.
-- `vercel.json` — rewrites `/api/*` → `/api/index.ts`.
-- Backend imports use `.js` extensions (ESM at runtime).
+- `server/config/env.ts` — Zod-validated env.
+- `server/shared/errors.ts` — AppError hierarchy.
+- `server/middleware/*` — requestId, errorHandler.
+- `server/app.ts` — `buildApp(): Express`.
+- `api/index.ts` — exports app.
 
-## Installed Dependencies (Step 13 + 16)
-Server + shared runtime: express@5, cors, cookie-parser, better-auth, drizzle-orm, @neondatabase/serverless, zod, stripe, ably, cloudinary, resend
-Frontend runtime: react@19, react-dom@19, react-router-dom, @tanstack/react-query, @tanstack/react-table, zustand, react-hook-form, @hookform/resolvers, framer-motion, lucide-react, sonner, recharts, ably, react-qr-code
-Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9.3, @types/react, @types/react-dom, @types/node, @types/express, @types/cors, @types/cookie-parser, drizzle-kit, tsx, eslint, @eslint/js, typescript-eslint, eslint-config-prettier, prettier, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, vitest, @testing-library/react, @testing-library/jest-dom, jsdom, supertest, @types/supertest, @playwright/test
+## Installed Dependencies
+Server: express@5, cors, cookie-parser, better-auth, drizzle-orm, @neondatabase/serverless, zod, stripe, ably, cloudinary, resend
+Frontend: react@19, react-dom@19, react-router-dom, @tanstack/react-query, @tanstack/react-table, zustand, react-hook-form, @hookform/resolvers, framer-motion, lucide-react, sonner, recharts, ably, react-qr-code, clsx, tailwind-merge
+Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9.3, eslint, prettier, vitest, @playwright/test, etc.
 
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
 - Neon scale-to-zero causes first-connection delay.
-- Ably free tier message counting includes fan-out delivery.
-- Cloudinary credits consumed by transforms + storage + bandwidth.
-- Multi-machine edit conflicts if pull/push discipline is skipped.
-- Scope creep risk: v1 features leaking into MVP.
-- `vercel dev -L` Express+Vite routing must be proven at Step 19.
+- `vercel dev` on Laptop B requires Admin CMD.
 - `npm audit fix --force` can break working setup — never run it.
 
 ## Test Results
 - Step 15: `npx tsc --noEmit` → 0 errors
-- Step 16: `npm run lint` → 0 errors; `npx prettier --check .` → clean
-- Step 17: `.env.local` ignored, `.env.example` tracked, secrets stripped
+- Step 16: `npm run lint` → 0 errors
+- Step 17: `.env.local` ignored, `.env.example` clean
 - Step 18: `npx tsc --noEmit` → 0 errors
-
-## Provider Usage Notes
-- Check provider dashboards manually. Application cannot read authoritative billing data.
+- Step 19: `vercel dev --local` → Frontend + `/api/v1/health` (200) verified
+- Step 20: Design system renders correctly (manual browser check)
