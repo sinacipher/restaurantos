@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Clock, MapPin, Phone, ShoppingBag, Plus, Minus, Trash2, Search, X } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -51,8 +52,6 @@ export function StorefrontPage() {
   const { slug } = useParams();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
-  
-  // Search & Filter states
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
@@ -78,16 +77,12 @@ export function StorefrontPage() {
     },
   });
 
-  // Filter menu based on search and category
   const filteredMenu = useMemo(() => {
     if (!menu) return [];
-    
     let result = menu;
-    
     if (activeCategory !== 'all') {
       result = result.filter(c => c.id === activeCategory);
     }
-
     if (search.trim()) {
       const query = search.toLowerCase();
       result = result.map(category => ({
@@ -96,9 +91,8 @@ export function StorefrontPage() {
           item.name.toLowerCase().includes(query) || 
           (item.description && item.description.toLowerCase().includes(query))
         )
-      })).filter(category => category.items.length > 0); // Hide empty categories
+      })).filter(category => category.items.length > 0);
     }
-
     return result;
   }, [menu, search, activeCategory]);
 
@@ -123,8 +117,31 @@ export function StorefrontPage() {
     }
   };
 
+  // Structured Data (JSON-LD) for Google
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    name: restaurant.name,
+    description: restaurant.description || 'Order online from ' + restaurant.name,
+    url: window.location.href,
+    image: restaurant.heroUrl || undefined,
+    telephone: restaurant.phone || undefined,
+    hasMenu: `${window.location.origin}/api/v1/public/restaurants/${slug}/menu`,
+  };
+
   return (
     <div className="min-h-screen bg-ink-50 pb-32">
+      {/* Dynamic SEO Head */}
+      <Helmet>
+        <title>{restaurant.name} - Order Online</title>
+        <meta name="description" content={restaurant.description || `Order food online from ${restaurant.name}.`} />
+        <meta property="og:title" content={restaurant.name} />
+        <meta property="og:description" content={restaurant.description || `Order food online from ${restaurant.name}.`} />
+        <meta property="og:type" content="website" />
+        {restaurant.heroUrl && <meta property="og:image" content={restaurant.heroUrl} />}
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+      </Helmet>
+
       {/* Hero Section */}
       <div 
         className="h-64 sm:h-80 w-full bg-ink-800 relative"
