@@ -11,6 +11,7 @@ import { menuRouter } from './modules/menu/routes.js';
 import { publicRouter } from './modules/public/routes.js';
 import { uploadsRouter } from './modules/uploads/routes.js';
 import { tablesRouter } from './modules/tables/routes.js';
+import { ordersRouter } from './modules/orders/routes.js';
 
 
 export function buildApp(): Express {
@@ -27,6 +28,7 @@ export function buildApp(): Express {
   app.use('/api/v1/public', publicRouter);
   app.use('/api/v1/uploads', uploadsRouter);
   app.use('/api/v1/tables', tablesRouter);
+  app.use('/api/v1', ordersRouter);
 
 
   // Auth & Public routes

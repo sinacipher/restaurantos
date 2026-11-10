@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { Clock, MapPin, Phone, ShoppingBag, Plus, Minus, Trash2, Search, X } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { useCartStore, type SelectedModifier } from '../../stores/cart';
+import { CheckoutModal } from './CheckoutModal';
 import { cn } from '../../lib/utils';
 
 interface Modifier {
@@ -52,6 +52,8 @@ export function StorefrontPage() {
   const { slug } = useParams();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
@@ -117,7 +119,6 @@ export function StorefrontPage() {
     }
   };
 
-  // Structured Data (JSON-LD) for Google
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
@@ -131,16 +132,14 @@ export function StorefrontPage() {
 
   return (
     <div className="min-h-screen bg-ink-50 pb-32">
-      {/* Dynamic SEO Head */}
-      <Helmet>
-        <title>{restaurant.name} - Order Online</title>
-        <meta name="description" content={restaurant.description || `Order food online from ${restaurant.name}.`} />
-        <meta property="og:title" content={restaurant.name} />
-        <meta property="og:description" content={restaurant.description || `Order food online from ${restaurant.name}.`} />
-        <meta property="og:type" content="website" />
-        {restaurant.heroUrl && <meta property="og:image" content={restaurant.heroUrl} />}
-        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
-      </Helmet>
+      {/* Native React 19 SEO Tags */}
+      <title>{restaurant.name} - Order Online</title>
+      <meta name="description" content={restaurant.description || `Order food online from ${restaurant.name}.`} />
+      <meta property="og:title" content={restaurant.name} />
+      <meta property="og:description" content={restaurant.description || `Order food online from ${restaurant.name}.`} />
+      <meta property="og:type" content="website" />
+      {restaurant.heroUrl && <meta property="og:image" content={restaurant.heroUrl} />}
+      <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
 
       {/* Hero Section */}
       <div 
@@ -318,7 +317,7 @@ export function StorefrontPage() {
                 <span>Total</span>
                 <span>{totalPrice.toFixed(2)}</span>
               </div>
-              <Button className="w-full" size="lg" onClick={() => alert('Checkout coming in Step 50!')}>
+              <Button className="w-full" size="lg" onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}>
                 Checkout
               </Button>
             </div>
@@ -344,6 +343,13 @@ export function StorefrontPage() {
           }}
         />
       )}
+
+      <CheckoutModal 
+        slug={slug!} 
+        isOpen={isCheckoutOpen} 
+        onClose={() => setIsCheckoutOpen(false)} 
+        onSuccess={() => { setIsCheckoutOpen(false); }} 
+      />
     </div>
   );
 }
