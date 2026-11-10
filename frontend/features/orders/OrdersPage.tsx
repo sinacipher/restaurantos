@@ -36,7 +36,7 @@ export function OrdersPage() {
       if (!res.ok) throw new Error('Failed to load orders');
       return (await res.json()).data as Order[];
     },
-    refetchInterval: 5000, // Poll every 5 seconds for new orders (Ably will replace this later)
+    refetchInterval: 5000, // Poll every 5 seconds
   });
 
   const updateStatusMutation = useMutation({
@@ -52,11 +52,31 @@ export function OrdersPage() {
       }
       return res.json();
     },
+    onMutate: async ({ orderId, state }) => {
+      await queryClient.cancelQueries({ queryKey: ['orders', restaurantId] });
+      const previousOrders = queryClient.getQueryData<Order[]>(['orders', restaurantId]);
+      
+      if (previousOrders) {
+        queryClient.setQueryData<Order[]>(['orders', restaurantId], 
+          previousOrders.map(order => 
+            order.id === orderId ? { ...order, state } : order
+          )
+        );
+      }
+      return { previousOrders };
+    },
+    onError: (err, _variables, context) => {
+      if (context?.previousOrders) {
+        queryClient.setQueryData(['orders', restaurantId], context.previousOrders);
+      }
+      toast.error(err.message);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
       toast.success('Order updated');
     },
-    onError: (err) => toast.error(err.message),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
+    },
   });
 
   if (isLoading) return <div className="p-8">Loading orders...</div>;
@@ -110,7 +130,6 @@ export function OrdersPage() {
                     </p>
                   </div>
 
-                  {/* Action Buttons based on state */}
                   <div className="mt-4 w-full">
                     {order.state === 'pending_confirmation' && (
                       <div className="flex gap-2 w-full">
