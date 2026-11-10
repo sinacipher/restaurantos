@@ -82,7 +82,7 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
 
     const [updated] = await db
       .update(orders)
-      .set({ state: newState as any })
+      .set({ state: newState as typeof orders.$inferInsert.state })
       .where(eq(orders.id, orderId))
       .returning();
 
