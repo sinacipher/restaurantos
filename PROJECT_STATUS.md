@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 17 — Environment variables (complete, awaiting verification)
+Step 18 — Folder skeleton + Express backbone + env validator (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -21,10 +21,11 @@ Step 17 — Environment variables (complete, awaiting verification)
 - Step 14 — Tailwind CSS v4
 - Step 15 — TypeScript strict mode + path aliases
 - Step 16 — ESLint + Prettier
-- Step 17 — Environment variables
+- Step 17 — Environment variables (leak fixed, Neon password rotated)
+- Step 18 — Folder skeleton + Express backbone + env validator
 
 ## Pending Steps
-- Steps 18–100
+- Steps 19–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -44,6 +45,9 @@ Step 17 — Environment variables (complete, awaiting verification)
 - **TypeScript pinned to `~5.9.3`**.
 - Express **5.x** installed (async errors auto-bubble).
 - Do **NOT** run `npm audit fix --force`.
+- **All server code imports `env` from `server/config/env.ts` — never `process.env` directly.**
+- **Backend imports use `.js` extensions** (required by ESM in tsx at runtime; tsc tolerates it).
+- **`api/index.ts` is the only Vercel function.** Express routes go inside `server/app.ts`.
 
 ## Free-Tier Planning Ceilings (verified 2026-11-09)
 | Service | Planned ceiling |
@@ -83,13 +87,23 @@ Ultra-strict flags enabled. Aliases `@frontend/*`, `@server/*`, `@shared/*` mirr
 ESLint 10 flat config + Prettier. Scripts: `npm run lint`, `npm run format`. Both green.
 
 ## Environment (Step 17)
-- `.env.example` tracked at root — full schema with placeholders.
-- `.env.local` per-laptop, gitignored — actual secrets.
-- `BETTER_AUTH_SECRET` generated per laptop via Node crypto.
-- Database URLs are placeholders until Step 21 (Neon).
-- Feature flags default safe: `EMAIL_MODE=preview`, `PAYMENT_MODE=simulated`, `ENABLE_ABLY=false`, `ENABLE_CLOUDINARY=false`.
-- `.emails/` gitignored (preview email output).
-- Zod validation of env lives in `server/config/env.ts` (added Step 19).
+- `.env.example` tracked — placeholders only (leak fixed in `3041096`).
+- `.env.local` per-laptop, gitignored.
+- Neon password rotated after leak — old credentials dead.
+- `BETTER_AUTH_SECRET` per laptop.
+- Feature flags safe defaults.
+
+## Backend Backbone (Step 18)
+- Folder skeleton per `docs/SYSTEM_ARCHITECTURE.md` §2 created.
+- `server/config/env.ts` — Zod-validated env, throws on missing/invalid, exports typed `env`.
+- `server/shared/errors.ts` — `AppError` + subclasses for standard error codes.
+- `server/middleware/request-id.ts` — attaches `X-Request-Id`.
+- `server/middleware/error-handler.ts` — `notFoundHandler` + `errorHandler`, JSON envelope.
+- `server/modules/health/routes.ts` — `GET /` → `{ ok: true, service, version, timestamp }`.
+- `server/app.ts` — `buildApp(): Express`, no `listen()`.
+- `api/index.ts` — imports `buildApp`, exports app as default. **Only** Vercel function.
+- `vercel.json` — rewrites `/api/*` → `/api/index.ts`.
+- Backend imports use `.js` extensions (ESM at runtime).
 
 ## Installed Dependencies (Step 13 + 16)
 Server + shared runtime: express@5, cors, cookie-parser, better-auth, drizzle-orm, @neondatabase/serverless, zod, stripe, ably, cloudinary, resend
@@ -109,7 +123,8 @@ Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9
 ## Test Results
 - Step 15: `npx tsc --noEmit` → 0 errors
 - Step 16: `npm run lint` → 0 errors; `npx prettier --check .` → clean
-- Step 17: `.env.local` ignored, `.env.example` tracked (verified via `git check-ignore`)
+- Step 17: `.env.local` ignored, `.env.example` tracked, secrets stripped
+- Step 18: `npx tsc --noEmit` → 0 errors
 
 ## Provider Usage Notes
 - Check provider dashboards manually. Application cannot read authoritative billing data.
