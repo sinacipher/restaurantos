@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 20 — Design System Foundation (complete, awaiting verification)
+Step 21 — Neon connection verified (complete, awaiting Laptop A sync)
 
 ## Completed Steps
 - Step 0–9 — Planning (Personas, Journeys, Requirements, Workflows, etc.)
@@ -16,9 +16,10 @@ Step 20 — Design System Foundation (complete, awaiting verification)
 - Step 18 — Folder skeleton + Express backbone + env validator
 - Step 19 — `vercel dev --local` POC (API + Frontend verified locally)
 - Step 20 — Design System Foundation
+- Step 21 — Neon connection verified
 
 ## Pending Steps
-- Steps 21–100
+- Steps 22–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -32,9 +33,10 @@ Step 20 — Design System Foundation (complete, awaiting verification)
 - File creation habit: `type nul > path\FILE.md` then `notepad path\FILE.md`; edit with **Ctrl+S**, never Save As.
 - Single root `package.json` (ESM `"type": "module"`).
 - **TypeScript pinned to `~5.9.3`**. Express **5.x**.
-- **Local dev command:** `vercel dev --local` (requires Admin CMD on Laptop B due to Windows symlink restriction).
+- **Local dev command:** `vercel dev --local` (requires Admin CMD on Laptop B).
 - **Backend imports use `.js` extensions** (ESM).
 - **`api/index.ts` is the only Vercel function.**
+- **Neon connection verified** using `@neondatabase/serverless`.
 
 ## Free-Tier Planning Ceilings
 (Verified 2026-11-09 — Vercel, Neon, Ably, Cloudinary, Resend, Stripe Test)
@@ -46,11 +48,7 @@ Step 20 — Design System Foundation (complete, awaiting verification)
 - **Tokens:** Tailwind v4 via `@theme` in `frontend/index.css`.
 - **Colors:** `brand` (copper), `ink` (neutral dark), `success`, `warning`, `danger`.
 - **Utilities:** `cn()` (clsx + tailwind-merge) in `frontend/lib/utils.ts`.
-- **Components (`frontend/components/ui/`):**
-  - `Button`: variants (primary, secondary, ghost, danger), sizes (sm, md, lg), loading state.
-  - `Input`: label, error message, focus states, forwardRef.
-  - `Card`: white background, border, shadow.
-  - `Badge`: variants (default, success, warning, danger).
+- **Components (`frontend/components/ui/`):** `Button`, `Input`, `Card`, `Badge`.
 
 ## Backend Backbone (Step 18)
 - `server/config/env.ts` — Zod-validated env.
@@ -76,4 +74,5 @@ Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9
 - Step 17: `.env.local` ignored, `.env.example` clean
 - Step 18: `npx tsc --noEmit` → 0 errors
 - Step 19: `vercel dev --local` → Frontend + `/api/v1/health` (200) verified
-- Step 20: Design system renders correctly (manual browser check)
+- Step 20: Design system renders correctly
+- Step 21: `npx tsx --env-file=.env.local test-db.ts` → `✅ Connection successful!`
