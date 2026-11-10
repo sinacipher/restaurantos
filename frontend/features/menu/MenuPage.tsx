@@ -6,6 +6,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { Plus, Trash2 } from 'lucide-react';
 
 interface MenuItem {
@@ -26,7 +27,9 @@ interface MenuCategory {
 export function MenuPage() {
   const { restaurantId } = useParams();
   const queryClient = useQueryClient();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   // Form state
   const [name, setName] = useState('');
@@ -78,6 +81,7 @@ export function MenuPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menu', restaurantId] });
+      setItemToDelete(null);
     },
   });
 
@@ -110,7 +114,7 @@ export function MenuPage() {
                           {item.isAvailable ? 'Available' : 'Sold Out'}
                         </Badge>
                         <button
-                          onClick={() => { if(confirm('Delete item?')) deleteMutation.mutate(item.id) }}
+                          onClick={() => setItemToDelete(item.id)}
                           className="text-ink-400 hover:text-danger transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -158,6 +162,17 @@ export function MenuPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={() => { if (itemToDelete) deleteMutation.mutate(itemToDelete); }}
+        title="Delete Item"
+        message="Are you sure you want to delete this menu item? This action cannot be undone."
+        confirmText="Delete"
+        isDanger
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }
