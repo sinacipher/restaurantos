@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -31,7 +32,6 @@ export function MenuPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
-  // Form state
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -65,9 +65,13 @@ export function MenuPage() {
       return res.json();
     },
     onSuccess: () => {
+      toast.success('Item created successfully');
       queryClient.invalidateQueries({ queryKey: ['menu', restaurantId] });
       setIsModalOpen(false);
       setName(''); setDescription(''); setPrice(''); setCategoryId('');
+    },
+    onError: () => {
+      toast.error('Failed to create item');
     },
   });
 
@@ -80,8 +84,12 @@ export function MenuPage() {
       if (!res.ok) throw new Error('Failed to delete item');
     },
     onSuccess: () => {
+      toast.success('Item deleted');
       queryClient.invalidateQueries({ queryKey: ['menu', restaurantId] });
       setItemToDelete(null);
+    },
+    onError: () => {
+      toast.error('Failed to delete item');
     },
   });
 
