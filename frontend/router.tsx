@@ -5,6 +5,7 @@ import { DashboardPage } from './features/dashboard/DashboardPage';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminDashboardPage } from './features/dashboard/AdminDashboardPage';
+import { MenuPage } from './features/menu/MenuPage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -20,7 +21,7 @@ export const router = createBrowserRouter([
           { index: true, element: <AdminDashboardPage /> },
           // Placeholders for future steps
           { path: 'orders', element: <div className="p-8">Orders</div> },
-          { path: 'menu', element: <div className="p-8">Menu</div> },
+          { path: 'menu', element: <MenuPage /> },
           { path: 'kitchen', element: <div className="p-8">Kitchen</div> },
           { path: 'reservations', element: <div className="p-8">Reservations</div> },
           { path: 'inventory', element: <div className="p-8">Inventory</div> },

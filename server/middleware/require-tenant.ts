@@ -9,7 +9,12 @@ export const requireTenant: RequestHandler = async (req, _res, next) => {
   try {
     if (!req.user) throw new Error('requireTenant must be used after requireAuth');
 
-    let restaurantId = req.params['restaurantId'] as string | undefined;
+    // Check path param (for URLs like /admin/:restaurantId)
+    // OR header (for APIs called from the frontend like /api/v1/menu)
+    let restaurantId = (req.params['restaurantId'] || req.headers['x-restaurant-id']) as
+      | string
+      | undefined;
+
     const slug = req.params['slug'] as string | undefined;
 
     // If the URL uses a slug (like the public storefront), look up the ID first
