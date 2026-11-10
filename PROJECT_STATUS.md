@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 23 — Drizzle Configuration (complete, awaiting verification)
+Step 24 — Database Conventions (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -12,16 +12,17 @@ Step 23 — Drizzle Configuration (complete, awaiting verification)
 - Step 14 — Tailwind CSS v4
 - Step 15 — TypeScript strict mode + path aliases
 - Step 16 — ESLint + Prettier
-- Step 17 — Environment variables (leak fixed, Neon password rotated)
-- Step 18 — Folder skeleton + Express backbone + env validator
+- Step 17 — Environment variables
+- Step 18 — Folder skeleton + Express backbone
 - Step 19 — `vercel dev --local` POC
 - Step 20 — Design System Foundation
-- Step 21 — Neon connection verified (Laptop A + B)
+- Step 21 — Neon connection verified
 - Step 22 — Database connectivity (Drizzle Client)
 - Step 23 — Drizzle Configuration
+- Step 24 — Database Conventions
 
 ## Pending Steps
-- Steps 24–100
+- Steps 25–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -39,8 +40,9 @@ Step 23 — Drizzle Configuration (complete, awaiting verification)
 - **Backend imports use `.js` extensions** (ESM).
 - **`api/index.ts` is the only Vercel function.**
 - **Neon connection verified.**
-- **Drizzle client:** `db` in `server/database/client.ts` (pooled).
-- **Drizzle config:** `drizzle.config.ts` (uses `DATABASE_URL_UNPOOLED`).
+- **Drizzle client:** `db` in `server/database/client.ts`.
+- **Drizzle config:** `drizzle.config.ts`.
+- **DB Conventions:** UUIDs for IDs, integer minor units for money, UTC timestamps, tenant isolation via `restaurantId`.
 
 ## Free-Tier Planning Ceilings
 (Verified 2026-11-09 — Vercel, Neon, Ably, Cloudinary, Resend, Stripe Test)
@@ -49,20 +51,17 @@ Step 23 — Drizzle Configuration (complete, awaiting verification)
 ~34 features: tenancy + auth + menu + storefront + ordering + payments (simulated) + kitchen + tenant safety.
 
 ## Design System (Step 14, Step 20)
-- **Tokens:** Tailwind v4 via `@theme` in `frontend/index.css`.
-- **Colors:** `brand` (copper), `ink` (neutral dark), `success`, `warning`, `danger`.
-- **Utilities:** `cn()` in `frontend/lib/utils.ts`.
-- **Components:** `Button`, `Input`, `Card`, `Badge`.
+- **Tokens:** Tailwind v4 via `@theme`.
+- **Components:** `Button`, `Input`, `Card`, `Badge` + `cn()` utility.
 
-## Backend Backbone (Step 18–23)
+## Backend Backbone (Step 18–24)
 - `server/config/env.ts` — Zod-validated env.
 - `server/shared/errors.ts` — AppError hierarchy.
 - `server/middleware/*` — requestId, errorHandler.
 - `server/app.ts` — `buildApp()`.
 - `api/index.ts` — exports app.
 - `server/database/client.ts` — Drizzle instance.
-- `server/database/schema/index.ts` — schema entry (empty).
-- `server/database/migrations/` — output folder.
+- `server/database/schema/_shared.ts` — shared columns.
 - `drizzle.config.ts` — migration configuration.
 
 ## Installed Dependencies
@@ -79,10 +78,11 @@ Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9
 ## Test Results
 - Step 15: `npx tsc --noEmit` → 0 errors
 - Step 16: `npm run lint` → 0 errors
-- Step 17: `.env.local` ignored, `.env.example` clean
+- Step 17: `.env.local` ignored
 - Step 18: `npx tsc --noEmit` → 0 errors
-- Step 19: `vercel dev --local` → Frontend + `/api/v1/health` (200) verified
+- Step 19: `vercel dev --local` → Frontend + `/api/v1/health` verified
 - Step 20: Design system renders correctly
-- Step 21: Neon connection verified (Laptop A + B)
+- Step 21: Neon connection verified (A + B)
 - Step 22: Drizzle connection verified
-- Step 23: `npm run db:generate` → "No schema changes, nothing to migrate"
+- Step 23: `npm run db:generate` → "No schema changes"
+- Step 24: `npx tsc --noEmit` → 0 errors (pending)
