@@ -12,6 +12,8 @@ import { publicRouter } from './modules/public/routes.js';
 import { uploadsRouter } from './modules/uploads/routes.js';
 import { tablesRouter } from './modules/tables/routes.js';
 import { ordersRouter } from './modules/orders/routes.js';
+import { ablyRouter } from './modules/ably/routes.js';
+
 
 
 export function buildApp(): Express {
@@ -29,6 +31,7 @@ export function buildApp(): Express {
   app.use('/api/v1/uploads', uploadsRouter);
   app.use('/api/v1/tables', tablesRouter);
   app.use('/api/v1', ordersRouter);
+  app.use('/api/v1/ably', ablyRouter);
 
 
   // Auth & Public routes

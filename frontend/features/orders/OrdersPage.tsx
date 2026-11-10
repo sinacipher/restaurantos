@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { getAblyClient, disconnectAbly } from '../../lib/ably';
 
 interface OrderItem {
   id: string;
@@ -36,8 +38,44 @@ export function OrdersPage() {
       if (!res.ok) throw new Error('Failed to load orders');
       return (await res.json()).data as Order[];
     },
-    refetchInterval: 5000, // Poll every 5 seconds
+    refetchInterval: 5000, // Fallback polling since Ably is disabled
   });
+
+  // Connect to Ably (will silently fail if disabled in .env)
+  useEffect(() => {
+    let isMounted = true;
+    let channel: any;
+
+    async function setupAbly() {
+      try {
+        const client = await getAblyClient(restaurantId!);
+        channel = client.channels.get(`restaurant:${restaurantId}`);
+
+        channel.subscribe('order.created', () => {
+          toast.info('New order received!');
+          queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
+        });
+
+        channel.subscribe('order.updated', (msg: any) => {
+          queryClient.setQueryData<Order[]>(['orders', restaurantId], (old) => {
+            if (!old) return old;
+            return old.map(o => o.id === msg.data.id ? { ...o, state: msg.data.state } : o);
+          });
+        });
+
+      } catch (err) {
+        console.warn('Ably connection failed (falling back to polling)', err);
+      }
+    }
+
+    setupAbly();
+
+    return () => {
+      isMounted = false;
+      if (channel) channel.unsubscribe();
+      disconnectAbly();
+    };
+  }, [restaurantId, queryClient]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, state }: { orderId: string; state: string }) => {
@@ -58,25 +96,16 @@ export function OrdersPage() {
       
       if (previousOrders) {
         queryClient.setQueryData<Order[]>(['orders', restaurantId], 
-          previousOrders.map(order => 
-            order.id === orderId ? { ...order, state } : order
-          )
+          previousOrders.map(order => order.id === orderId ? { ...order, state } : order)
         );
       }
       return { previousOrders };
     },
     onError: (err, _variables, context) => {
-      if (context?.previousOrders) {
-        queryClient.setQueryData(['orders', restaurantId], context.previousOrders);
-      }
+      if (context?.previousOrders) queryClient.setQueryData(['orders', restaurantId], context.previousOrders);
       toast.error(err.message);
     },
-    onSuccess: () => {
-      toast.success('Order updated');
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
-    },
+    onSuccess: () => toast.success('Order updated'),
   });
 
   if (isLoading) return <div className="p-8">Loading orders...</div>;
@@ -90,9 +119,7 @@ export function OrdersPage() {
         </div>
 
         {orders?.length === 0 ? (
-          <Card className="p-8 text-center text-ink-500">
-            No orders yet. Place one from the storefront to see it here.
-          </Card>
+          <Card className="p-8 text-center text-ink-500">No orders yet.</Card>
         ) : (
           <div className="grid gap-4">
             {orders?.map((order) => (
@@ -100,10 +127,7 @@ export function OrdersPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-bold text-ink-900 text-lg">Order #{order.id.slice(0, 8)}</h3>
-                    <Badge variant={
-                      order.state === 'pending_confirmation' ? 'warning' : 
-                      order.state === 'completed' ? 'success' : 'default'
-                    }>
+                    <Badge variant={order.state === 'pending_confirmation' ? 'warning' : order.state === 'completed' ? 'success' : 'default'}>
                       {order.state.replace(/_/g, ' ')}
                     </Badge>
                   </div>
@@ -122,12 +146,8 @@ export function OrdersPage() {
                 
                 <div className="flex flex-col items-end justify-between min-w-[150px]">
                   <div className="text-right">
-                    <span className="text-2xl font-bold text-brand-600">
-                      {(order.totalMinor / 100).toFixed(2)} {order.currency}
-                    </span>
-                    <p className="text-xs text-ink-400 mt-1">
-                      {new Date(order.createdAt).toLocaleTimeString()}
-                    </p>
+                    <span className="text-2xl font-bold text-brand-600">{(order.totalMinor / 100).toFixed(2)} {order.currency}</span>
+                    <p className="text-xs text-ink-400 mt-1">{new Date(order.createdAt).toLocaleTimeString()}</p>
                   </div>
 
                   <div className="mt-4 w-full">
@@ -137,15 +157,9 @@ export function OrdersPage() {
                         <Button variant="danger" onClick={() => updateStatusMutation.mutate({ orderId: order.id, state: 'rejected' })}>Reject</Button>
                       </div>
                     )}
-                    {order.state === 'accepted' && (
-                      <Button className="w-full" onClick={() => updateStatusMutation.mutate({ orderId: order.id, state: 'preparing' })}>Start Preparing</Button>
-                    )}
-                    {order.state === 'preparing' && (
-                      <Button className="w-full" onClick={() => updateStatusMutation.mutate({ orderId: order.id, state: 'ready' })}>Mark Ready</Button>
-                    )}
-                    {order.state === 'ready' && (
-                      <Button className="w-full" onClick={() => updateStatusMutation.mutate({ orderId: order.id, state: 'completed' })}>Complete Order</Button>
-                    )}
+                    {order.state === 'accepted' && <Button className="w-full" onClick={() => updateStatusMutation.mutate({ orderId: order.id, state: 'preparing' })}>Start Preparing</Button>}
+                    {order.state === 'preparing' && <Button className="w-full" onClick={() => updateStatusMutation.mutate({ orderId: order.id, state: 'ready' })}>Mark Ready</Button>}
+                    {order.state === 'ready' && <Button className="w-full" onClick={() => updateStatusMutation.mutate({ orderId: order.id, state: 'completed' })}>Complete Order</Button>}
                   </div>
                 </div>
               </Card>

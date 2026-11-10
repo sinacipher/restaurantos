@@ -10,6 +10,7 @@ import { calculateOrderTotal } from './pricing.js';
 import { ValidationError, NotFoundError } from '../../shared/errors.js';
 import { requireAuth } from '../../middleware/require-auth.js';
 import { requireTenant } from '../../middleware/require-tenant.js';
+import { publishEvent } from '../../providers/ably.js';
 
 export const ordersRouter = Router();
 
@@ -43,7 +44,7 @@ ordersRouter.get('/orders', requireAuth, requireTenant, async (req, res, next) =
   }
 });
 
-// PATCH /api/v1/orders/:id/status
+// PATCH /api/v1/orders/:id/status (Admin)
 ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
@@ -85,6 +86,9 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
       .set({ state: newState as typeof orders.$inferInsert.state })
       .where(eq(orders.id, orderId))
       .returning();
+
+    // Publish real-time event
+    await publishEvent(`restaurant:${restaurantId}`, 'order.updated', updated);
 
     res.json({ data: updated });
   } catch (err) {
@@ -142,6 +146,9 @@ ordersRouter.post('/public/orders', async (req, res, next) => {
     });
 
     await db.insert(orderItems).values(orderItemsData);
+
+    // Publish real-time event
+    await publishEvent(`restaurant:${restaurant.id}`, 'order.created', order);
 
     res.status(201).json({ data: order });
   } catch (err) {
