@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 29 — Tenant Resolution Middleware (complete)
+Step 32 — Memberships & Dashboard Context (complete)
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -25,6 +25,7 @@ Step 29 — Tenant Resolution Middleware (complete)
 - Step 27 — Core Domain Schema
 - Step 28 — Seed System
 - Step 29 — Tenant Resolution Middleware (complete)
+- Step 32 — Memberships & Dashboard Context (complete)
 ## Pending Steps
 - Steps 29–100
 

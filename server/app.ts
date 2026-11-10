@@ -6,6 +6,7 @@ import { requestId } from './middleware/request-id.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { healthRouter } from './modules/health/routes.js';
 import { auth } from './auth/auth.js';
+import { restaurantsRouter } from './modules/restaurants/routes.js';
 
 export function buildApp(): Express {
   const app = express();
@@ -21,7 +22,8 @@ export function buildApp(): Express {
   app.all(/^\/api\/v1\/auth(.*)/, toNodeHandler(auth));
   app.use('/api/v1/health', healthRouter);
 
-  // (Routes will be added in later steps)
+  // Protected routes
+  app.use('/api/v1/restaurants', restaurantsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
