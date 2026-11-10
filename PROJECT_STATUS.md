@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 16 — ESLint + Prettier (complete, awaiting verification)
+Step 17 — Environment variables (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0 — Project Kickoff
@@ -21,9 +21,10 @@ Step 16 — ESLint + Prettier (complete, awaiting verification)
 - Step 14 — Tailwind CSS v4
 - Step 15 — TypeScript strict mode + path aliases
 - Step 16 — ESLint + Prettier
+- Step 17 — Environment variables
 
 ## Pending Steps
-- Steps 17–100
+- Steps 18–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -70,21 +71,25 @@ Step 16 — ESLint + Prettier (complete, awaiting verification)
 
 ## Design System (Step 14)
 Tailwind v4 via `@tailwindcss/vite`. Theming in `frontend/index.css` via `@theme {}`.
-- Brand: warm copper (`brand-50`…`brand-900`, primary = `brand-600` = #c15e2c)
+- Brand: warm copper (`brand-50`…`brand-900`, primary = `brand-600`)
 - Ink: neutral dark scale (`ink-50`…`ink-950`)
 - Semantic: `success`, `warning`, `danger`
 - Radius: `sm=6px`, `md=10px`, `lg=14px`, `xl=20px`
 
 ## TypeScript (Step 15)
-Ultra-strict flags enabled.
-Path aliases: `@frontend/*`, `@server/*`, `@shared/*` — mirrored in `vite.config.ts` and `tsconfig.json`.
+Ultra-strict flags enabled. Aliases `@frontend/*`, `@server/*`, `@shared/*` mirrored in tsconfig + Vite.
 
 ## Lint / Format (Step 16)
-- ESLint 10 flat config in `eslint.config.js` (TS + React hooks + React refresh + prettier-compat).
-- Rules: no `any`, unused vars must be `_`-prefixed, `consistent-type-imports`, `no-console` (warn/error allowed).
-- Prettier: single quotes, semicolons, 100 cols, LF endings, trailing commas.
-- Ignored by Prettier: `*.md`, `package-lock.json`, build dirs, `.env*`.
-- Scripts: `npm run lint`, `npm run format`.
+ESLint 10 flat config + Prettier. Scripts: `npm run lint`, `npm run format`. Both green.
+
+## Environment (Step 17)
+- `.env.example` tracked at root — full schema with placeholders.
+- `.env.local` per-laptop, gitignored — actual secrets.
+- `BETTER_AUTH_SECRET` generated per laptop via Node crypto.
+- Database URLs are placeholders until Step 21 (Neon).
+- Feature flags default safe: `EMAIL_MODE=preview`, `PAYMENT_MODE=simulated`, `ENABLE_ABLY=false`, `ENABLE_CLOUDINARY=false`.
+- `.emails/` gitignored (preview email output).
+- Zod validation of env lives in `server/config/env.ts` (added Step 19).
 
 ## Installed Dependencies (Step 13 + 16)
 Server + shared runtime: express@5, cors, cookie-parser, better-auth, drizzle-orm, @neondatabase/serverless, zod, stripe, ably, cloudinary, resend
@@ -104,6 +109,7 @@ Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9
 ## Test Results
 - Step 15: `npx tsc --noEmit` → 0 errors
 - Step 16: `npm run lint` → 0 errors; `npx prettier --check .` → clean
+- Step 17: `.env.local` ignored, `.env.example` tracked (verified via `git check-ignore`)
 
 ## Provider Usage Notes
 - Check provider dashboards manually. Application cannot read authoritative billing data.

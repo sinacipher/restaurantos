@@ -4,6 +4,7 @@ build/
 .env
 .env.local
 .env.*.local
+.emails/
 *.log
 .DS_Store
 Thumbs.db
