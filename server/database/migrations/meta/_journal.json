@@ -15,6 +15,13 @@
       "when": 1794309725444,
       "tag": "0001_dusty_monster_badoon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794311712241,
+      "tag": "0002_rainy_sersi",
+      "breakpoints": true
     }
   ]
 }

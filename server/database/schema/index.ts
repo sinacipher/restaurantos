@@ -5,3 +5,4 @@ export * from './verifications.js';
 export * from './restaurants.js';
 export * from './branches.js';
 export * from './memberships.js';
+export * from './menu.js';

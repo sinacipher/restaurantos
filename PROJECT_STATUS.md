@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 33 — Protected Navigation (Admin Shell) (complete)
+Step 34 — Menu Database Schema (complete)
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -27,6 +27,7 @@ Step 33 — Protected Navigation (Admin Shell) (complete)
 - Step 29 — Tenant Resolution Middleware (complete)
 - Step 32 — Memberships & Dashboard Context (complete)
 - Step 33 — Protected Navigation (Admin Shell) (complete)
+- Step 34 — Menu Database Schema (complete)
 ## Pending Steps
 - Steps 29–100
 
