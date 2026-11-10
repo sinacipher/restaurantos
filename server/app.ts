@@ -6,8 +6,6 @@ import { requestId } from './middleware/request-id.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { healthRouter } from './modules/health/routes.js';
 import { auth } from './auth/auth.js';
-import { requireAuth } from './middleware/require-auth.js';
-import { requireTenant } from './middleware/require-tenant.js';
 
 export function buildApp(): Express {
   const app = express();
@@ -23,19 +21,7 @@ export function buildApp(): Express {
   app.all(/^\/api\/v1\/auth(.*)/, toNodeHandler(auth));
   app.use('/api/v1/health', healthRouter);
 
-  // --- TEMPORARY TEST ROUTE FOR TENANT RESOLUTION ---
-  app.get(
-    '/api/v1/test-tenant/:restaurantId',
-    requireAuth,
-    requireTenant,
-    (req, res) => {
-      res.json({
-        message: 'Tenant access verified!',
-        userId: req.user?.id,
-        tenant: req.tenant,
-      });
-    }
-  );
+  // (Routes will be added in later steps)
 
   app.use(notFoundHandler);
   app.use(errorHandler);
