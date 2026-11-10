@@ -47,7 +47,19 @@ publicRouter.get('/restaurants/:slug/menu', async (req, res, next) => {
 
     // Fetch modifier groups and modifiers for these items
     const itemIds = items.map((i) => i.id);
-    let itemModifierGroups: any[] = [];
+    
+    type ItemWithModifiers = typeof menuItems.$inferSelect & {
+      modifierGroups: Array<{
+        id: string;
+        name: string;
+        minSelect: number;
+        maxSelect: number;
+        isRequired: boolean;
+        modifiers: Array<typeof modifiers.$inferSelect>;
+      }>;
+    };
+    
+    let itemModifierGroups: ItemWithModifiers[] = [];
     
     if (itemIds.length > 0) {
       const groupsLink = await db
