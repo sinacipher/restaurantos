@@ -1,10 +1,10 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 22 — Database connectivity (Drizzle Client) (complete, awaiting verification)
+Step 23 — Drizzle Configuration (complete, awaiting verification)
 
 ## Completed Steps
-- Step 0–9 — Planning (Personas, Journeys, Requirements, Workflows, etc.)
+- Step 0–9 — Planning
 - Step 10 — Environment Inspection (Laptop A + B)
 - Step 11 — Project Initialization
 - Step 12 — Vite + React + TypeScript scaffold
@@ -14,13 +14,14 @@ Step 22 — Database connectivity (Drizzle Client) (complete, awaiting verificat
 - Step 16 — ESLint + Prettier
 - Step 17 — Environment variables (leak fixed, Neon password rotated)
 - Step 18 — Folder skeleton + Express backbone + env validator
-- Step 19 — `vercel dev --local` POC (API + Frontend verified locally)
+- Step 19 — `vercel dev --local` POC
 - Step 20 — Design System Foundation
 - Step 21 — Neon connection verified (Laptop A + B)
 - Step 22 — Database connectivity (Drizzle Client)
+- Step 23 — Drizzle Configuration
 
 ## Pending Steps
-- Steps 23–100
+- Steps 24–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -37,8 +38,9 @@ Step 22 — Database connectivity (Drizzle Client) (complete, awaiting verificat
 - **Local dev command:** `vercel dev --local`.
 - **Backend imports use `.js` extensions** (ESM).
 - **`api/index.ts` is the only Vercel function.**
-- **Neon connection verified** using `@neondatabase/serverless`.
-- **Drizzle client** uses `neon-http` driver and `env.DATABASE_URL` (pooled).
+- **Neon connection verified.**
+- **Drizzle client:** `db` in `server/database/client.ts` (pooled).
+- **Drizzle config:** `drizzle.config.ts` (uses `DATABASE_URL_UNPOOLED`).
 
 ## Free-Tier Planning Ceilings
 (Verified 2026-11-09 — Vercel, Neon, Ably, Cloudinary, Resend, Stripe Test)
@@ -49,21 +51,24 @@ Step 22 — Database connectivity (Drizzle Client) (complete, awaiting verificat
 ## Design System (Step 14, Step 20)
 - **Tokens:** Tailwind v4 via `@theme` in `frontend/index.css`.
 - **Colors:** `brand` (copper), `ink` (neutral dark), `success`, `warning`, `danger`.
-- **Utilities:** `cn()` (clsx + tailwind-merge) in `frontend/lib/utils.ts`.
-- **Components (`frontend/components/ui/`):** `Button`, `Input`, `Card`, `Badge`.
+- **Utilities:** `cn()` in `frontend/lib/utils.ts`.
+- **Components:** `Button`, `Input`, `Card`, `Badge`.
 
-## Backend Backbone (Step 18)
+## Backend Backbone (Step 18–23)
 - `server/config/env.ts` — Zod-validated env.
 - `server/shared/errors.ts` — AppError hierarchy.
 - `server/middleware/*` — requestId, errorHandler.
-- `server/app.ts` — `buildApp(): Express`.
+- `server/app.ts` — `buildApp()`.
 - `api/index.ts` — exports app.
-- `server/database/client.ts` — Drizzle ORM instance.
+- `server/database/client.ts` — Drizzle instance.
+- `server/database/schema/index.ts` — schema entry (empty).
+- `server/database/migrations/` — output folder.
+- `drizzle.config.ts` — migration configuration.
 
 ## Installed Dependencies
 Server: express@5, cors, cookie-parser, better-auth, drizzle-orm, @neondatabase/serverless, zod, stripe, ably, cloudinary, resend
 Frontend: react@19, react-dom@19, react-router-dom, @tanstack/react-query, @tanstack/react-table, zustand, react-hook-form, @hookform/resolvers, framer-motion, lucide-react, sonner, recharts, ably, react-qr-code, clsx, tailwind-merge
-Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9.3, eslint, prettier, vitest, @playwright/test, etc.
+Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9.3, eslint, prettier, vitest, @playwright/test, dotenv, etc.
 
 ## Known Risks
 - Vercel Hobby is non-commercial / personal use only.
@@ -78,5 +83,6 @@ Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9
 - Step 18: `npx tsc --noEmit` → 0 errors
 - Step 19: `vercel dev --local` → Frontend + `/api/v1/health` (200) verified
 - Step 20: Design system renders correctly
-- Step 21: `npx tsx --env-file=.env.local test-db.ts` → `✅ Connection successful!`
-- Step 22: `npx tsc --noEmit` → 0 errors (pending verification)
+- Step 21: Neon connection verified (Laptop A + B)
+- Step 22: Drizzle connection verified
+- Step 23: `npm run db:generate` → "No schema changes, nothing to migrate"
