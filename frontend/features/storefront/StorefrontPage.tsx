@@ -4,8 +4,38 @@ import { useParams } from 'react-router-dom';
 import { Clock, MapPin, Phone, ShoppingBag, Plus, Minus, Trash2 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { useCartStore } from '../../stores/cart';
+import { Modal } from '../../components/ui/Modal';
+import { useCartStore, type SelectedModifier } from '../../stores/cart';
 
+interface Modifier {
+  id: string;
+  name: string;
+  priceDeltaMinor: number;
+}
+
+interface ModifierGroup {
+  id: string;
+  name: string;
+  minSelect: number;
+  maxSelect: number;
+  isRequired: boolean;
+  modifiers: Modifier[];
+}
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  basePriceMinor: number;
+  currency: string;
+  modifierGroups: ModifierGroup[];
+}
+
+interface MenuCategory {
+  id: string;
+  name: string;
+  items: MenuItem[];
+}
 
 interface Restaurant {
   name: string;
@@ -15,23 +45,10 @@ interface Restaurant {
   currency: string;
 }
 
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string | null;
-  basePriceMinor: number;
-  currency: string;
-}
-
-interface MenuCategory {
-  id: string;
-  name: string;
-  items: MenuItem[];
-}
-
 export function StorefrontPage() {
   const { slug } = useParams();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
   
   const cart = useCartStore();
 
@@ -60,6 +77,21 @@ export function StorefrontPage() {
 
   const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.getTotalMinor() / 100;
+
+  const handleAddToCart = (item: MenuItem) => {
+    if (item.modifierGroups.length > 0) {
+      setCustomizingItem(item);
+    } else {
+      cart.addItem(slug!, {
+        menuItemId: item.id,
+        name: item.name,
+        basePriceMinor: item.basePriceMinor,
+        finalUnitPriceMinor: item.basePriceMinor,
+        currency: item.currency,
+        modifiers: [],
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-ink-50 pb-32">
@@ -108,10 +140,7 @@ export function StorefrontPage() {
                       <span className="font-medium text-ink-900 whitespace-nowrap">
                         {(item.basePriceMinor / 100).toFixed(2)} {item.currency}
                       </span>
-                      <Button 
-                        size="sm" 
-                        onClick={() => cart.addItem(slug!, { id: item.id, name: item.name, priceMinor: item.basePriceMinor, currency: item.currency })}
-                      >
+                      <Button size="sm" onClick={() => handleAddToCart(item)}>
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
@@ -138,7 +167,7 @@ export function StorefrontPage() {
         </div>
       )}
 
-      {/* Cart Drawer (Simple Overlay for now) */}
+      {/* Cart Drawer */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setIsCartOpen(false)} />
@@ -148,20 +177,25 @@ export function StorefrontPage() {
               <button onClick={() => setIsCartOpen(false)} className="text-ink-400 hover:text-ink-600">✕</button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {cart.items.map((item) => (
-                <div key={item.id} className="flex justify-between items-center gap-4">
+                <div key={item.cartItemId} className="flex justify-between items-start gap-4">
                   <div className="flex-1">
                     <p className="font-medium text-ink-900">{item.name}</p>
-                    <p className="text-sm text-ink-500">{(item.priceMinor / 100).toFixed(2)} {item.currency}</p>
+                    <p className="text-sm text-ink-500">{(item.finalUnitPriceMinor / 100).toFixed(2)} {item.currency}</p>
+                    {item.modifiers.length > 0 && (
+                      <ul className="text-xs text-ink-400 mt-1 list-disc list-inside">
+                        {item.modifiers.map((m, idx) => <li key={idx}>{m.name}</li>)}
+                      </ul>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 border border-ink-200 rounded-md px-2 py-1">
-                      <button onClick={() => cart.updateQuantity(item.id, item.quantity - 1)}><Minus className="h-4 w-4 text-ink-500" /></button>
+                      <button onClick={() => cart.updateQuantity(item.cartItemId, item.quantity - 1)}><Minus className="h-4 w-4 text-ink-500" /></button>
                       <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
-                      <button onClick={() => cart.updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4 text-ink-500" /></button>
+                      <button onClick={() => cart.updateQuantity(item.cartItemId, item.quantity + 1)}><Plus className="h-4 w-4 text-ink-500" /></button>
                     </div>
-                    <button onClick={() => cart.removeItem(item.id)} className="text-ink-400 hover:text-danger"><Trash2 className="h-4 w-4" /></button>
+                    <button onClick={() => cart.removeItem(item.cartItemId)} className="text-ink-400 hover:text-danger"><Trash2 className="h-4 w-4" /></button>
                   </div>
                 </div>
               ))}
@@ -172,13 +206,114 @@ export function StorefrontPage() {
                 <span>Total</span>
                 <span>{totalPrice.toFixed(2)}</span>
               </div>
-              <Button className="w-full" size="lg" onClick={() => alert('Checkout will be built in Step 50!')}>
+              <Button className="w-full" size="lg" onClick={() => alert('Checkout coming in Step 50!')}>
                 Checkout
               </Button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Customization Modal */}
+      {customizingItem && (
+        <CustomizeItemModal 
+          item={customizingItem} 
+          onClose={() => setCustomizingItem(null)} 
+          onAdd={(selectedMods, finalPrice) => {
+            cart.addItem(slug!, {
+              menuItemId: customizingItem.id,
+              name: customizingItem.name,
+              basePriceMinor: customizingItem.basePriceMinor,
+              finalUnitPriceMinor: finalPrice,
+              currency: customizingItem.currency,
+              modifiers: selectedMods,
+            });
+            setCustomizingItem(null);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function CustomizeItemModal({ item, onClose, onAdd }: { item: MenuItem, onClose: () => void, onAdd: (mods: SelectedModifier[], price: number) => void }) {
+  const [selectedMods, setSelectedMods] = useState<SelectedModifier[]>([]);
+
+  const toggleModifier = (group: ModifierGroup, mod: Modifier) => {
+    const isSelected = selectedMods.some(m => m.id === mod.id);
+    
+    if (isSelected) {
+      setSelectedMods(selectedMods.filter(m => m.id !== mod.id));
+    } else {
+      const selectedInGroup = selectedMods.filter(m => group.modifiers.some(gm => gm.id === m.id));
+      
+      if (selectedInGroup.length >= group.maxSelect) {
+        if (group.maxSelect === 1) {
+           // Replace if it's a single-choice group (radio button style)
+           const otherMods = selectedMods.filter(m => !group.modifiers.some(gm => gm.id === m.id));
+           setSelectedMods([...otherMods, { id: mod.id, name: mod.name, priceMinor: mod.priceDeltaMinor }]);
+        }
+        return;
+      }
+      setSelectedMods([...selectedMods, { id: mod.id, name: mod.name, priceMinor: mod.priceDeltaMinor }]);
+    }
+  };
+
+  const finalPrice = item.basePriceMinor + selectedMods.reduce((sum, m) => sum + m.priceMinor, 0);
+  
+  const isValid = item.modifierGroups.every(group => {
+    if (!group.isRequired) return true;
+    const count = selectedMods.filter(m => group.modifiers.some(gm => gm.id === m.id)).length;
+    return count >= group.minSelect;
+  });
+
+  return (
+    <Modal isOpen={true} onClose={onClose} title={`Customize ${item.name}`}>
+      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+        {item.modifierGroups.map(group => (
+          <div key={group.id}>
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-medium text-ink-900">{group.name}</h4>
+              <span className="text-xs text-ink-500">
+                {group.isRequired ? 'Required' : 'Optional'} (Max {group.maxSelect})
+              </span>
+            </div>
+            <div className="space-y-2">
+              {group.modifiers.map(mod => {
+                const isSelected = selectedMods.some(m => m.id === mod.id);
+                return (
+                  <label key={mod.id} className="flex items-center justify-between p-2 rounded hover:bg-ink-50 cursor-pointer border border-transparent has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 transition-all">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type={group.maxSelect === 1 ? 'radio' : 'checkbox'}
+                        name={group.id}
+                        checked={isSelected}
+                        onChange={() => toggleModifier(group, mod)}
+                        className="h-4 w-4 text-brand-600 focus:ring-brand-500"
+                      />
+                      <span className="text-sm text-ink-700">{mod.name}</span>
+                    </div>
+                    {mod.priceDeltaMinor > 0 && (
+                      <span className="text-sm font-medium text-ink-600">+{(mod.priceDeltaMinor / 100).toFixed(2)}</span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="pt-6 mt-4 border-t border-ink-200">
+        <Button 
+          className="w-full" 
+          size="lg" 
+          disabled={!isValid}
+          onClick={() => onAdd(selectedMods, finalPrice)}
+        >
+          Add to Cart - {(finalPrice / 100).toFixed(2)}
+        </Button>
+      </div>
+    </Modal>
   );
 }
