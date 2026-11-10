@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom';
 import { Clock, MapPin, Phone, ShoppingBag, Plus, Minus, Trash2, Search, X } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { useCartStore, type SelectedModifier } from '../../stores/cart';
 import { cn } from '../../lib/utils';
