@@ -1,7 +1,7 @@
 # RestaurantOS — Project Status
 
 ## Current Step
-Step 24 — Database Conventions (complete, awaiting verification)
+Step 25 — Authentication Schema (complete, awaiting verification)
 
 ## Completed Steps
 - Step 0–9 — Planning
@@ -20,9 +20,10 @@ Step 24 — Database Conventions (complete, awaiting verification)
 - Step 22 — Database connectivity (Drizzle Client)
 - Step 23 — Drizzle Configuration
 - Step 24 — Database Conventions
+- Step 25 — Authentication Schema
 
 ## Pending Steps
-- Steps 25–100
+- Steps 26–100
 
 ## Fixed Decisions
 - Budget: $0/month. No paid plans, no trials, no credit cards for paid upgrades.
@@ -41,8 +42,8 @@ Step 24 — Database Conventions (complete, awaiting verification)
 - **`api/index.ts` is the only Vercel function.**
 - **Neon connection verified.**
 - **Drizzle client:** `db` in `server/database/client.ts`.
-- **Drizzle config:** `drizzle.config.ts`.
-- **DB Conventions:** UUIDs for IDs, integer minor units for money, UTC timestamps, tenant isolation via `restaurantId`.
+- **DB Conventions:** UUIDs for IDs, integer minor units for money, UTC timestamps.
+- **Auth tables:** `users`, `sessions`, `accounts`, `verifications` created.
 
 ## Free-Tier Planning Ceilings
 (Verified 2026-11-09 — Vercel, Neon, Ably, Cloudinary, Resend, Stripe Test)
@@ -54,14 +55,14 @@ Step 24 — Database Conventions (complete, awaiting verification)
 - **Tokens:** Tailwind v4 via `@theme`.
 - **Components:** `Button`, `Input`, `Card`, `Badge` + `cn()` utility.
 
-## Backend Backbone (Step 18–24)
+## Backend Backbone (Step 18–25)
 - `server/config/env.ts` — Zod-validated env.
 - `server/shared/errors.ts` — AppError hierarchy.
 - `server/middleware/*` — requestId, errorHandler.
 - `server/app.ts` — `buildApp()`.
 - `api/index.ts` — exports app.
 - `server/database/client.ts` — Drizzle instance.
-- `server/database/schema/_shared.ts` — shared columns.
+- `server/database/schema/*` — Auth tables (`users`, `sessions`, `accounts`, `verifications`).
 - `drizzle.config.ts` — migration configuration.
 
 ## Installed Dependencies
@@ -85,4 +86,5 @@ Dev: vite, @vitejs/plugin-react, tailwindcss, @tailwindcss/vite, typescript@~5.9
 - Step 21: Neon connection verified (A + B)
 - Step 22: Drizzle connection verified
 - Step 23: `npm run db:generate` → "No schema changes"
-- Step 24: `npx tsc --noEmit` → 0 errors (pending)
+- Step 24: `npx tsc --noEmit` → 0 errors
+- Step 25: `npm run db:migrate` → applied successfully (pending verification)

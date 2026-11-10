@@ -1,5 +1,4 @@
-// RestaurantOS — Database Schema
-// Tables will be added in Step 24 onwards.
-// Every new table file must be re-exported from this file.
-
-export {};
+export * from './users.js';
+export * from './sessions.js';
+export * from './accounts.js';
+export * from './verifications.js';
