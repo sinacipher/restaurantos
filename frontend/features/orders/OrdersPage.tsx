@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import type * as Ably from 'ably';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -43,7 +44,7 @@ export function OrdersPage() {
 
   // Connect to Ably (will silently fail if disabled in .env)
   useEffect(() => {
-    let channel: any;
+    let channel: Ably.RealtimeChannel | undefined;
 
     async function setupAbly() {
       try {
@@ -55,12 +56,14 @@ export function OrdersPage() {
           queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
         });
 
-        channel.subscribe('order.updated', (msg: any) => {
+        channel.subscribe('order.updated', (msg: Ably.Message) => {
+          const updatedOrder = msg.data as Order;
           queryClient.setQueryData<Order[]>(['orders', restaurantId], (old) => {
             if (!old) return old;
-            return old.map(o => o.id === msg.data.id ? { ...o, state: msg.data.state } : o);
+            return old.map(o => o.id === updatedOrder.id ? { ...o, state: updatedOrder.state } : o);
           });
         });
+
       } catch (err) {
         console.warn('Ably connection failed (falling back to polling)', err);
       }
