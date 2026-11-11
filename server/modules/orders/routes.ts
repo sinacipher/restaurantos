@@ -6,6 +6,7 @@ import { restaurants } from '../../database/schema/restaurants.js';
 import { branches } from '../../database/schema/branches.js';
 import { menuItems } from '../../database/schema/menu.js';
 import { orders, orderItems } from '../../database/schema/orders.js';
+import { recipes, recipeIngredients, stockMovements } from '../../database/schema/inventory.js';
 import { calculateOrderTotal } from './pricing.js';
 import { ValidationError, NotFoundError } from '../../shared/errors.js';
 import { requireAuth } from '../../middleware/require-auth.js';
@@ -21,12 +22,9 @@ ordersRouter.get('/orders/kitchen', requireAuth, requireTenant, async (req, res,
     const kitchenOrders = await db.query.orders.findMany({
       where: and(
         eq(orders.restaurantId, restaurantId),
-        or(
-          eq(orders.state, 'accepted'),
-          eq(orders.state, 'preparing')
-        )
+        or(eq(orders.state, 'accepted'), eq(orders.state, 'preparing'))
       ),
-      orderBy: [desc(orders.createdAt)], // Oldest first
+      orderBy: [desc(orders.createdAt)],
     });
 
     if (kitchenOrders.length === 0) {
@@ -80,7 +78,7 @@ ordersRouter.get('/orders', requireAuth, requireTenant, async (req, res, next) =
   }
 });
 
-// PATCH /api/v1/orders/:id/status (Admin & Kitchen)
+// PATCH /api/v1/orders/:id/status
 ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
@@ -118,6 +116,35 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
       .set({ state: parsed.data.state as typeof orders.$inferInsert.state })
       .where(eq(orders.id, orderId))
       .returning();
+
+    // --- INVENTORY DEDUCTION ---
+    if (parsed.data.state === 'accepted') {
+      const items = await db.query.orderItems.findMany({ where: eq(orderItems.orderId, orderId) });
+      
+      for (const item of items) {
+        const recipe = await db.query.recipes.findFirst({
+          where: eq(recipes.menuItemId, item.menuItemId),
+        });
+
+        if (recipe) {
+          const ingredientsToDeduct = await db.query.recipeIngredients.findMany({
+            where: eq(recipeIngredients.recipeId, recipe.id),
+          });
+
+          for (const ing of ingredientsToDeduct) {
+            await db.insert(stockMovements).values({
+              restaurantId,
+              ingredientId: ing.ingredientId,
+              type: 'consumption',
+              quantityChange: (-Number(ing.quantity) * item.quantity).toString(),
+              orderId: order.id,
+              notes: `Deducted for Order #${order.id.slice(0, 8)}`,
+            });
+          }
+        }
+      }
+    }
+    // ---------------------------
 
     await publishEvent(`restaurant:${restaurantId}`, 'order.updated', updated);
 

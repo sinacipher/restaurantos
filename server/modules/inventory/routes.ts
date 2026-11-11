@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { eq, desc, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../../database/client.js';
-import { ingredients, stockMovements } from '../../database/schema/inventory.js';
+import { ingredients, stockMovements, recipes, recipeIngredients } from '../../database/schema/inventory.js';
 import { requireAuth } from '../../middleware/require-auth.js';
 import { requireTenant } from '../../middleware/require-tenant.js';
 import { ValidationError } from '../../shared/errors.js';
@@ -21,7 +21,6 @@ inventoryRouter.get('/ingredients', async (req, res, next) => {
       orderBy: [desc(ingredients.createdAt)],
     });
 
-    // Calculate current stock for each ingredient using the ledger
     const stockSums = await db
       .select({
         ingredientId: stockMovements.ingredientId,
@@ -65,7 +64,6 @@ inventoryRouter.post('/ingredients', async (req, res, next) => {
 
     if (!ingredient) throw new Error('Failed to create ingredient');
 
-    // Add initial stock if provided
     if (parsed.data.initialStock > 0) {
       await db.insert(stockMovements).values({
         restaurantId,
@@ -77,6 +75,80 @@ inventoryRouter.post('/ingredients', async (req, res, next) => {
     }
 
     res.status(201).json({ data: ingredient });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/v1/inventory/recipes/:menuItemId
+inventoryRouter.get('/recipes/:menuItemId', async (req, res, next) => {
+  try {
+    const menuItemId = req.params['menuItemId'] as string;
+
+    const recipe = await db.query.recipes.findFirst({
+      where: eq(recipes.menuItemId, menuItemId),
+    });
+
+    if (!recipe) {
+      res.json({ data: [] });
+      return;
+    }
+
+    const items = await db.select({
+      id: recipeIngredients.id,
+      ingredientId: recipeIngredients.ingredientId,
+      quantity: recipeIngredients.quantity,
+      name: ingredients.name,
+      unit: ingredients.unit,
+    })
+    .from(recipeIngredients)
+    .innerJoin(ingredients, eq(recipeIngredients.ingredientId, ingredients.id))
+    .where(eq(recipeIngredients.recipeId, recipe.id));
+
+    res.json({ data: items });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/v1/inventory/recipes/:menuItemId
+inventoryRouter.post('/recipes/:menuItemId', async (req, res, next) => {
+  try {
+    const menuItemId = req.params['menuItemId'] as string;
+
+    const schema = z.object({
+      ingredients: z.array(z.object({
+        ingredientId: z.string().uuid(),
+        quantity: z.number().min(0.001),
+      }))
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) throw new ValidationError('Invalid recipe data');
+
+    // Delete old recipe if exists
+    const existing = await db.query.recipes.findFirst({ where: eq(recipes.menuItemId, menuItemId) });
+    if (existing) {
+      await db.delete(recipes).where(eq(recipes.id, existing.id));
+    }
+
+    if (parsed.data.ingredients.length === 0) {
+      res.json({ success: true });
+      return;
+    }
+
+    const [recipe] = await db.insert(recipes).values({ menuItemId }).returning();
+    if (!recipe) throw new Error('Failed to create recipe');
+
+    await db.insert(recipeIngredients).values(
+      parsed.data.ingredients.map(i => ({
+        recipeId: recipe.id,
+        ingredientId: i.ingredientId,
+        quantity: i.quantity.toString(),
+      }))
+    );
+
+    res.json({ success: true });
   } catch (err) {
     next(err);
   }
