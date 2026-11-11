@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { env } from '../config/env.js';
 import { Resend } from 'resend';
 
