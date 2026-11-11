@@ -10,7 +10,7 @@ interface CheckoutModalProps {
   slug: string;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (orderId: string) => void;
 }
 
 export function CheckoutModal({ slug, isOpen, onClose, onSuccess }: CheckoutModalProps) {
@@ -33,10 +33,11 @@ export function CheckoutModal({ slug, isOpen, onClose, onSuccess }: CheckoutModa
       if (!res.ok) throw new Error('Checkout failed');
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Order placed successfully!');
       cart.clearCart();
-      onSuccess();
+      // Pass the exact order ID from the response
+      onSuccess(data.data.id);
     },
     onError: () => toast.error('Failed to place order. Please try again.'),
   });

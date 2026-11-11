@@ -1,0 +1,1 @@
+ALTER TABLE "reservations" ALTER COLUMN "state" SET DEFAULT 'pending';

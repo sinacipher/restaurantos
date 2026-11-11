@@ -1,13 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
-import { Clock, MapPin, Phone, ShoppingBag, Plus, Minus, Trash2, Search, X } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Clock, MapPin, Phone, ShoppingBag, Plus, Minus, Trash2, Search, X, CalendarDays } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { useCartStore, type SelectedModifier } from '../../stores/cart';
 import { CheckoutModal } from './CheckoutModal';
+import { ReservationModal } from './ReservationModal';
 import { cn } from '../../lib/utils';
 
 interface Modifier { id: string; name: string; priceDeltaMinor: number; }
@@ -18,7 +19,9 @@ interface Restaurant { name: string; description: string | null; heroUrl: string
 
 export function StorefrontPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isReservationOpen, setIsReservationOpen] = useState(false);
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -67,7 +70,7 @@ export function StorefrontPage() {
   const totalPrice = cart.getTotalMinor() / 100;
 
   const handleAddToCart = (item: MenuItem) => {
-    if (!item.isAvailable) return; // Safety check
+    if (!item.isAvailable) return;
     if (item.modifierGroups.length > 0) {
       setCustomizingItem(item);
     } else {
@@ -80,17 +83,21 @@ export function StorefrontPage() {
       <title>{restaurant.name} - Order Online</title>
       <meta name="description" content={restaurant.description || `Order food online from ${restaurant.name}.`} />
       
-      <div className="h-64 sm:h-80 w-full bg-ink-800 relative" style={{ backgroundImage: restaurant.heroUrl ? `url(${restaurant.heroUrl})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        {!restaurant.heroUrl && <div className="absolute inset-0 bg-gradient-to-br from-ink-800 to-ink-950" />}
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-          <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight mb-2">{restaurant.name}</h1>
-          {restaurant.description && <p className="text-white/90 max-w-lg">{restaurant.description}</p>}
+      {/* Fixed Hero Section */}
+      <div className="h-[400px] w-full bg-ink-900 relative flex items-center justify-center" style={{ backgroundImage: restaurant.heroUrl ? `url(${restaurant.heroUrl})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        {!restaurant.heroUrl && <div className="absolute inset-0 bg-gradient-to-br from-ink-900 to-ink-950" />}
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-2xl">
+          <h1 className="text-5xl sm:text-6xl font-extrabold text-white tracking-tight mb-4 shadow-sm">{restaurant.name}</h1>
+          {restaurant.description && <p className="text-lg text-white/90 mb-8 max-w-lg leading-relaxed">{restaurant.description}</p>}
+          <Button size="lg" onClick={() => setIsReservationOpen(true)} className="bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-full shadow-lg">
+            <CalendarDays className="h-5 w-5 mr-2" /> Book a Table
+          </Button>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto -mt-8 relative z-10 px-4">
-        <Card className="p-4 flex flex-wrap gap-6 items-center justify-center text-sm text-ink-600 shadow-md">
+      <div className="max-w-3xl mx-auto -mt-8 relative z-20 px-4">
+        <Card className="p-4 flex flex-wrap gap-6 items-center justify-center text-sm text-ink-600 shadow-lg border-0 ring-1 ring-ink-100">
           <div className="flex items-center gap-2"><Clock className="h-4 w-4" /> Open Now</div>
           <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Downtown</div>
           {restaurant.phone && <div className="flex items-center gap-2"><Phone className="h-4 w-4" /> {restaurant.phone}</div>}
@@ -202,7 +209,8 @@ export function StorefrontPage() {
         }} />
       )}
 
-      <CheckoutModal slug={slug!} isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} onSuccess={() => { setIsCheckoutOpen(false); }} />
+      <CheckoutModal slug={slug!} isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} onSuccess={(orderId) => { setIsCheckoutOpen(false); navigate(`/track/${orderId}`); }} />
+      <ReservationModal slug={slug!} isOpen={isReservationOpen} onClose={() => setIsReservationOpen(false)} />
     </div>
   );
 }

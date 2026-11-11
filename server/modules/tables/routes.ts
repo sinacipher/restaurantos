@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, asc } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../../database/client.js';
 import { tables } from '../../database/schema/tables.js';
@@ -17,7 +17,6 @@ tablesRouter.get('/', async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
     
-    // For simplicity, get the first branch of this restaurant
     const branch = await db.query.branches.findFirst({
       where: eq(branches.restaurantId, restaurantId),
     });
@@ -29,7 +28,7 @@ tablesRouter.get('/', async (req, res, next) => {
 
     const result = await db.query.tables.findMany({
       where: eq(tables.branchId, branch.id),
-      orderBy: (tables, { asc }) => [asc(tables.code)],
+      orderBy: [asc(tables.code)],
     });
 
     res.json({ data: result, branchId: branch.id });
@@ -73,7 +72,6 @@ tablesRouter.delete('/:id', async (req, res, next) => {
     const restaurantId = req.tenant!.restaurantId;
     const tableId = req.params['id'] as string;
 
-    // Verify table belongs to tenant's branch
     const branch = await db.query.branches.findFirst({
       where: eq(branches.restaurantId, restaurantId),
     });

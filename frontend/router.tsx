@@ -7,10 +7,16 @@ import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminDashboardPage } from './features/dashboard/AdminDashboardPage';
 import { MenuPage } from './features/menu/MenuPage';
 import { StorefrontPage } from './features/storefront/StorefrontPage';
+import { TrackOrderPage } from './features/storefront/TrackOrderPage';
 import { OrdersPage } from './features/orders/OrdersPage';
 import { QrCodePage } from './features/qr/QrCodePage';
 import { KitchenPage } from './features/kitchen/KitchenPage';
 import { InventoryPage } from './features/inventory/InventoryPage';
+import { CustomersPage } from './features/customers/CustomersPage';
+import { ReservationsPage } from './features/reservations/ReservationsPage';
+import { AnalyticsPage } from './features/analytics/AnalyticsPage';
+import { SettingsPage } from './features/settings/SettingsPage';
+
 
 
 
@@ -18,6 +24,7 @@ export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <SignupPage /> },
   { path: '/r/:slug', element: <StorefrontPage /> },
+  { path: '/track/:orderId', element: <TrackOrderPage /> },
   {
     element: <ProtectedRoute />,
     children: [
@@ -31,11 +38,14 @@ export const router = createBrowserRouter([
           { path: 'orders', element: <OrdersPage /> },
           { path: 'menu', element: <MenuPage /> },
           { path: 'qr-codes', element: <QrCodePage /> },
-          { path: 'reservations', element: <div className="p-8">Reservations</div> },
           { path: 'inventory', element: <InventoryPage /> },
-          { path: 'customers', element: <div className="p-8">Customers</div> },
+          { path: 'reservations', element: <ReservationsPage /> },
+          { path: 'customers', element: <CustomersPage /> },
           { path: 'analytics', element: <div className="p-8">Analytics</div> },
           { path: 'settings', element: <div className="p-8">Settings</div> },
+          { path: 'analytics', element: <AnalyticsPage /> },
+          { path: 'settings', element: <SettingsPage /> },
+
         ],
       },
     ],

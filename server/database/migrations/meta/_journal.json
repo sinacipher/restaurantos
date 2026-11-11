@@ -43,6 +43,20 @@
       "when": 1794397368850,
       "tag": "0005_broken_smiling_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794399227817,
+      "tag": "0006_swift_nocturne",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794400722494,
+      "tag": "0007_odd_clint_barton",
+      "breakpoints": true
     }
   ]
 }

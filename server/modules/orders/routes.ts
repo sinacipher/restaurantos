@@ -6,6 +6,7 @@ import { restaurants } from '../../database/schema/restaurants.js';
 import { branches } from '../../database/schema/branches.js';
 import { menuItems } from '../../database/schema/menu.js';
 import { orders, orderItems } from '../../database/schema/orders.js';
+import { customers } from '../../database/schema/customers.js';
 import { recipes, recipeIngredients, stockMovements } from '../../database/schema/inventory.js';
 import { calculateOrderTotal } from './pricing.js';
 import { ValidationError, NotFoundError } from '../../shared/errors.js';
@@ -26,22 +27,13 @@ ordersRouter.get('/orders/kitchen', requireAuth, requireTenant, async (req, res,
       orderBy: [desc(orders.createdAt)],
     });
 
-    if (kitchenOrders.length === 0) {
-      res.json({ data: [] });
-      return;
-    }
-
+    if (kitchenOrders.length === 0) return res.json({ data: [] });
     const orderIds = kitchenOrders.map(o => o.id);
     const items = await db.query.orderItems.findMany({
       where: inArray(orderItems.orderId, orderIds),
     });
 
-    const result = kitchenOrders.map(order => ({
-      ...order,
-      items: items.filter(i => i.orderId === order.id),
-    }));
-
-    res.json({ data: result });
+    res.json({ data: kitchenOrders.map(order => ({ ...order, items: items.filter(i => i.orderId === order.id) })) });
   } catch (err) {
     next(err);
   }
@@ -55,22 +47,13 @@ ordersRouter.get('/orders', requireAuth, requireTenant, async (req, res, next) =
       orderBy: [desc(orders.createdAt)],
     });
 
-    if (restaurantOrders.length === 0) {
-      res.json({ data: [] });
-      return;
-    }
-
+    if (restaurantOrders.length === 0) return res.json({ data: [] });
     const orderIds = restaurantOrders.map(o => o.id);
     const items = await db.query.orderItems.findMany({
       where: inArray(orderItems.orderId, orderIds),
     });
 
-    const result = restaurantOrders.map(order => ({
-      ...order,
-      items: items.filter(i => i.orderId === order.id),
-    }));
-
-    res.json({ data: result });
+    res.json({ data: restaurantOrders.map(order => ({ ...order, items: items.filter(i => i.orderId === order.id) })) });
   } catch (err) {
     next(err);
   }
@@ -91,7 +74,6 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
     const order = await db.query.orders.findFirst({
       where: and(eq(orders.id, orderId), eq(orders.restaurantId, restaurantId)),
     });
-
     if (!order) throw new NotFoundError('Order not found');
 
     const validTransitions: Record<string, string[]> = {
@@ -99,9 +81,7 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
       accepted: ['preparing', 'cancelled'],
       preparing: ['ready', 'cancelled'],
       ready: ['completed'],
-      completed: [],
-      rejected: [],
-      cancelled: [],
+      completed: [], rejected: [], cancelled: [],
     };
 
     if (!validTransitions[order.state]?.includes(parsed.data.state)) {
@@ -114,58 +94,37 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
       .where(eq(orders.id, orderId))
       .returning();
 
-    // --- INVENTORY DEDUCTION ---
     if (parsed.data.state === 'accepted') {
       const items = await db.query.orderItems.findMany({ where: eq(orderItems.orderId, orderId) });
-      
       for (const item of items) {
-        const recipe = await db.query.recipes.findFirst({
-          where: eq(recipes.menuItemId, item.menuItemId),
-        });
-
+        const recipe = await db.query.recipes.findFirst({ where: eq(recipes.menuItemId, item.menuItemId) });
         if (recipe) {
-          const ingredientsToDeduct = await db.query.recipeIngredients.findMany({
-            where: eq(recipeIngredients.recipeId, recipe.id),
-          });
-
+          const ingredientsToDeduct = await db.query.recipeIngredients.findMany({ where: eq(recipeIngredients.recipeId, recipe.id) });
           for (const ing of ingredientsToDeduct) {
             await db.insert(stockMovements).values({
-              restaurantId,
-              ingredientId: ing.ingredientId,
-              type: 'consumption',
+              restaurantId, ingredientId: ing.ingredientId, type: 'consumption',
               quantityChange: (-Number(ing.quantity) * item.quantity).toString(),
-              orderId: order.id,
-              notes: `Deducted for Order #${order.id.slice(0, 8)}`,
+              orderId: order.id, notes: `Deducted for Order #${order.id.slice(0, 8)}`,
             });
           }
         }
       }
     }
 
-    // --- INVENTORY REVERSAL ---
     if (parsed.data.state === 'cancelled' || parsed.data.state === 'rejected') {
-      const movements = await db.query.stockMovements.findMany({
-        where: eq(stockMovements.orderId, orderId)
-      });
-      
+      const movements = await db.query.stockMovements.findMany({ where: eq(stockMovements.orderId, orderId) });
       for (const mov of movements) {
-        // Only reverse if it hasn't been reversed yet (quantityChange != 0)
         if (Number(mov.quantityChange) !== 0) {
           await db.insert(stockMovements).values({
-            restaurantId,
-            ingredientId: mov.ingredientId,
-            type: 'adjustment',
+            restaurantId, ingredientId: mov.ingredientId, type: 'adjustment',
             quantityChange: (-Number(mov.quantityChange)).toString(),
-            orderId: order.id,
-            notes: `Reversal for ${parsed.data.state} Order #${order.id.slice(0, 8)}`,
+            orderId: order.id, notes: `Reversal for ${parsed.data.state} Order #${order.id.slice(0, 8)}`,
           });
         }
       }
     }
-    // ---------------------------
 
     await publishEvent(`restaurant:${restaurantId}`, 'order.updated', updated);
-
     res.json({ data: updated });
   } catch (err) {
     next(err);
@@ -190,6 +149,23 @@ ordersRouter.post('/public/orders', async (req, res, next) => {
     const branch = await db.query.branches.findFirst({ where: eq(branches.restaurantId, restaurant.id) });
     if (!branch) throw new NotFoundError('Branch not found');
 
+    // --- UPSERT CUSTOMER ---
+    const existingCustomer = await db.query.customers.findFirst({
+      where: and(eq(customers.restaurantId, restaurant.id), eq(customers.phone, parsed.data.customerPhone))
+    });
+
+    if (!existingCustomer) {
+      await db.insert(customers).values({
+        restaurantId: restaurant.id,
+        name: parsed.data.customerName,
+        phone: parsed.data.customerPhone,
+        totalOrders: 1,
+      });
+    } else {
+      await db.update(customers).set({ totalOrders: existingCustomer.totalOrders + 1 }).where(eq(customers.id, existingCustomer.id));
+    }
+    // -----------------------
+
     const { subtotalMinor, taxMinor, totalMinor } = await calculateOrderTotal(restaurant.id, parsed.data.items, restaurant.taxRateBps);
 
     const [order] = await db.insert(orders).values({
@@ -197,11 +173,7 @@ ordersRouter.post('/public/orders', async (req, res, next) => {
       branchId: branch.id,
       customerName: parsed.data.customerName,
       customerPhone: parsed.data.customerPhone,
-      subtotalMinor,
-      taxMinor,
-      totalMinor,
-      currency: restaurant.currency,
-      state: 'pending_confirmation',
+      subtotalMinor, taxMinor, totalMinor, currency: restaurant.currency, state: 'pending_confirmation',
     }).returning();
 
     if (!order) throw new Error('Failed to create order');
@@ -212,11 +184,9 @@ ordersRouter.post('/public/orders', async (req, res, next) => {
     const orderItemsData = parsed.data.items.map(item => {
       const dbItem = dbItems.find(i => i.id === item.menuItemId);
       return {
-        orderId: order.id,
-        menuItemId: item.menuItemId,
+        orderId: order.id, menuItemId: item.menuItemId,
         nameSnapshot: dbItem?.name || 'Unknown Item',
-        unitPriceMinor: dbItem?.basePriceMinor || 0,
-        quantity: item.quantity,
+        unitPriceMinor: dbItem?.basePriceMinor || 0, quantity: item.quantity,
       };
     });
 
@@ -224,6 +194,18 @@ ordersRouter.post('/public/orders', async (req, res, next) => {
     await publishEvent(`restaurant:${restaurant.id}`, 'order.created', order);
 
     res.status(201).json({ data: order });
+  } catch (err) {
+    next(err);
+  }
+});
+
+ordersRouter.get('/public/orders/:id', async (req, res, next) => {
+  try {
+    const orderId = req.params['id'] as string;
+    const order = await db.query.orders.findFirst({ where: eq(orders.id, orderId) });
+    if (!order) throw new NotFoundError('Order not found');
+    const items = await db.query.orderItems.findMany({ where: eq(orderItems.orderId, order.id) });
+    res.json({ data: { ...order, items } });
   } catch (err) {
     next(err);
   }
