@@ -20,13 +20,12 @@ const navigation = [
   { name: 'Overview', href: '', icon: LayoutDashboard },
   { name: 'Orders', href: '/orders', icon: ShoppingCart },
   { name: 'Menu', href: '/menu', icon: UtensilsCrossed },
-  { name: 'Kitchen (KDS)', href: '/kitchen', icon: ChefHat },
   { name: 'Reservations', href: '/reservations', icon: CalendarDays },
   { name: 'Inventory', href: '/inventory', icon: Package },
   { name: 'Customers', href: '/customers', icon: Users },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Settings', href: '/settings', icon: Settings },
   { name: 'QR Codes', href: '/qr-codes', icon: QrCode },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function AdminLayout() {
@@ -73,6 +72,17 @@ export function AdminLayout() {
               </Link>
             );
           })}
+
+          {/* Dedicated KDS Link (Opens in new tab) */}
+          <a
+            href={`/kitchen/${restaurantId}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900 transition-colors mt-4 border-t border-ink-100 pt-4"
+          >
+            <ChefHat className="h-4 w-4 text-brand-600" />
+            Kitchen (KDS)
+          </a>
         </nav>
 
         <div className="p-4 border-t border-ink-200">

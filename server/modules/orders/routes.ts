@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { eq, inArray, desc, and } from 'drizzle-orm';
+import { eq, inArray, desc, and, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../../database/client.js';
 import { restaurants } from '../../database/schema/restaurants.js';
@@ -13,6 +13,42 @@ import { requireTenant } from '../../middleware/require-tenant.js';
 import { publishEvent } from '../../providers/ably.js';
 
 export const ordersRouter = Router();
+
+// GET /api/v1/orders/kitchen (Kitchen Display)
+ordersRouter.get('/orders/kitchen', requireAuth, requireTenant, async (req, res, next) => {
+  try {
+    const restaurantId = req.tenant!.restaurantId;
+    const kitchenOrders = await db.query.orders.findMany({
+      where: and(
+        eq(orders.restaurantId, restaurantId),
+        or(
+          eq(orders.state, 'accepted'),
+          eq(orders.state, 'preparing')
+        )
+      ),
+      orderBy: [desc(orders.createdAt)], // Oldest first
+    });
+
+    if (kitchenOrders.length === 0) {
+      res.json({ data: [] });
+      return;
+    }
+
+    const orderIds = kitchenOrders.map(o => o.id);
+    const items = await db.query.orderItems.findMany({
+      where: inArray(orderItems.orderId, orderIds),
+    });
+
+    const result = kitchenOrders.map(order => ({
+      ...order,
+      items: items.filter(i => i.orderId === order.id),
+    }));
+
+    res.json({ data: result });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // GET /api/v1/orders (Admin)
 ordersRouter.get('/orders', requireAuth, requireTenant, async (req, res, next) => {
@@ -44,7 +80,7 @@ ordersRouter.get('/orders', requireAuth, requireTenant, async (req, res, next) =
   }
 });
 
-// PATCH /api/v1/orders/:id/status (Admin)
+// PATCH /api/v1/orders/:id/status (Admin & Kitchen)
 ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
@@ -63,7 +99,6 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
 
     if (!order) throw new NotFoundError('Order not found');
 
-    // State machine validation
     const validTransitions: Record<string, string[]> = {
       pending_confirmation: ['accepted', 'rejected', 'cancelled'],
       accepted: ['preparing', 'cancelled'],
@@ -74,20 +109,16 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
       cancelled: [],
     };
 
-    const currentState = order.state;
-    const newState = parsed.data.state;
-
-    if (!validTransitions[currentState]?.includes(newState)) {
-      throw new ValidationError(`Cannot transition from ${currentState} to ${newState}`);
+    if (!validTransitions[order.state]?.includes(parsed.data.state)) {
+      throw new ValidationError(`Cannot transition from ${order.state} to ${parsed.data.state}`);
     }
 
     const [updated] = await db
       .update(orders)
-      .set({ state: newState as typeof orders.$inferInsert.state })
+      .set({ state: parsed.data.state as typeof orders.$inferInsert.state })
       .where(eq(orders.id, orderId))
       .returning();
 
-    // Publish real-time event
     await publishEvent(`restaurant:${restaurantId}`, 'order.updated', updated);
 
     res.json({ data: updated });
@@ -146,8 +177,6 @@ ordersRouter.post('/public/orders', async (req, res, next) => {
     });
 
     await db.insert(orderItems).values(orderItemsData);
-
-    // Publish real-time event
     await publishEvent(`restaurant:${restaurant.id}`, 'order.created', order);
 
     res.status(201).json({ data: order });

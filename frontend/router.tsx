@@ -7,10 +7,9 @@ import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminDashboardPage } from './features/dashboard/AdminDashboardPage';
 import { MenuPage } from './features/menu/MenuPage';
 import { StorefrontPage } from './features/storefront/StorefrontPage';
-import { QrCodePage } from './features/qr/QrCodePage';
 import { OrdersPage } from './features/orders/OrdersPage';
-
-
+import { QrCodePage } from './features/qr/QrCodePage';
+import { KitchenPage } from './features/kitchen/KitchenPage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -20,21 +19,20 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       { path: '/', element: <DashboardPage /> },
+      { path: '/kitchen/:restaurantId', element: <KitchenPage /> },
       {
         path: '/admin/:restaurantId',
         element: <AdminLayout />,
         children: [
           { index: true, element: <AdminDashboardPage /> },
-          // Placeholders for future steps
           { path: 'orders', element: <OrdersPage /> },
           { path: 'menu', element: <MenuPage /> },
-          { path: 'kitchen', element: <div className="p-8">Kitchen</div> },
+          { path: 'qr-codes', element: <QrCodePage /> },
           { path: 'reservations', element: <div className="p-8">Reservations</div> },
           { path: 'inventory', element: <div className="p-8">Inventory</div> },
           { path: 'customers', element: <div className="p-8">Customers</div> },
           { path: 'analytics', element: <div className="p-8">Analytics</div> },
           { path: 'settings', element: <div className="p-8">Settings</div> },
-          { path: 'qr-codes', element: <QrCodePage /> },
         ],
       },
     ],
