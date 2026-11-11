@@ -15,7 +15,6 @@ import { publishEvent } from '../../providers/ably.js';
 
 export const ordersRouter = Router();
 
-// GET /api/v1/orders/kitchen (Kitchen Display)
 ordersRouter.get('/orders/kitchen', requireAuth, requireTenant, async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
@@ -48,7 +47,6 @@ ordersRouter.get('/orders/kitchen', requireAuth, requireTenant, async (req, res,
   }
 });
 
-// GET /api/v1/orders (Admin)
 ordersRouter.get('/orders', requireAuth, requireTenant, async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
@@ -78,7 +76,6 @@ ordersRouter.get('/orders', requireAuth, requireTenant, async (req, res, next) =
   }
 });
 
-// PATCH /api/v1/orders/:id/status
 ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
@@ -144,6 +141,27 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
         }
       }
     }
+
+    // --- INVENTORY REVERSAL ---
+    if (parsed.data.state === 'cancelled' || parsed.data.state === 'rejected') {
+      const movements = await db.query.stockMovements.findMany({
+        where: eq(stockMovements.orderId, orderId)
+      });
+      
+      for (const mov of movements) {
+        // Only reverse if it hasn't been reversed yet (quantityChange != 0)
+        if (Number(mov.quantityChange) !== 0) {
+          await db.insert(stockMovements).values({
+            restaurantId,
+            ingredientId: mov.ingredientId,
+            type: 'adjustment',
+            quantityChange: (-Number(mov.quantityChange)).toString(),
+            orderId: order.id,
+            notes: `Reversal for ${parsed.data.state} Order #${order.id.slice(0, 8)}`,
+          });
+        }
+      }
+    }
     // ---------------------------
 
     await publishEvent(`restaurant:${restaurantId}`, 'order.updated', updated);
@@ -154,7 +172,6 @@ ordersRouter.patch('/orders/:id/status', requireAuth, requireTenant, async (req,
   }
 });
 
-// POST /api/v1/public/orders (Customer)
 ordersRouter.post('/public/orders', async (req, res, next) => {
   try {
     const schema = z.object({

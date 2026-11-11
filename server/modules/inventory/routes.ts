@@ -11,7 +11,6 @@ export const inventoryRouter = Router();
 
 inventoryRouter.use(requireAuth, requireTenant);
 
-// GET /api/v1/inventory/ingredients
 inventoryRouter.get('/ingredients', async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
@@ -41,7 +40,6 @@ inventoryRouter.get('/ingredients', async (req, res, next) => {
   }
 });
 
-// POST /api/v1/inventory/ingredients
 inventoryRouter.post('/ingredients', async (req, res, next) => {
   try {
     const restaurantId = req.tenant!.restaurantId;
@@ -50,6 +48,7 @@ inventoryRouter.post('/ingredients', async (req, res, next) => {
       unit: z.enum(['g', 'kg', 'ml', 'l', 'pc']),
       costPerUnitMinor: z.number().int().min(0),
       initialStock: z.number().min(0).default(0),
+      lowStockThreshold: z.number().min(0).default(0),
     });
 
     const parsed = schema.safeParse(req.body);
@@ -60,6 +59,7 @@ inventoryRouter.post('/ingredients', async (req, res, next) => {
       name: parsed.data.name,
       unit: parsed.data.unit,
       costPerUnitMinor: parsed.data.costPerUnitMinor,
+      lowStockThreshold: parsed.data.lowStockThreshold.toString(),
     }).returning();
 
     if (!ingredient) throw new Error('Failed to create ingredient');
@@ -80,7 +80,39 @@ inventoryRouter.post('/ingredients', async (req, res, next) => {
   }
 });
 
-// GET /api/v1/inventory/recipes/:menuItemId
+inventoryRouter.post('/ingredients/:id/adjust', async (req, res, next) => {
+  try {
+    const restaurantId = req.tenant!.restaurantId;
+    const ingredientId = req.params['id'] as string;
+    
+    const schema = z.object({
+      quantityChange: z.number(), // can be negative (waste) or positive (found stock)
+      notes: z.string().min(1),
+      type: z.enum(['waste', 'purchase', 'adjustment']).default('adjustment')
+    });
+    
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) throw new ValidationError('Invalid adjustment data');
+
+    const ingredient = await db.query.ingredients.findFirst({
+      where: eq(ingredients.id, ingredientId),
+    });
+    if (!ingredient || ingredient.restaurantId !== restaurantId) throw new ValidationError('Ingredient not found');
+
+    await db.insert(stockMovements).values({
+      restaurantId,
+      ingredientId,
+      type: parsed.data.type,
+      quantityChange: parsed.data.quantityChange.toString(),
+      notes: parsed.data.notes,
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 inventoryRouter.get('/recipes/:menuItemId', async (req, res, next) => {
   try {
     const menuItemId = req.params['menuItemId'] as string;
@@ -111,7 +143,6 @@ inventoryRouter.get('/recipes/:menuItemId', async (req, res, next) => {
   }
 });
 
-// POST /api/v1/inventory/recipes/:menuItemId
 inventoryRouter.post('/recipes/:menuItemId', async (req, res, next) => {
   try {
     const menuItemId = req.params['menuItemId'] as string;
@@ -126,7 +157,6 @@ inventoryRouter.post('/recipes/:menuItemId', async (req, res, next) => {
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) throw new ValidationError('Invalid recipe data');
 
-    // Delete old recipe if exists
     const existing = await db.query.recipes.findFirst({ where: eq(recipes.menuItemId, menuItemId) });
     if (existing) {
       await db.delete(recipes).where(eq(recipes.id, existing.id));
