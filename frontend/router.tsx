@@ -10,6 +10,9 @@ import { StorefrontPage } from './features/storefront/StorefrontPage';
 import { OrdersPage } from './features/orders/OrdersPage';
 import { QrCodePage } from './features/qr/QrCodePage';
 import { KitchenPage } from './features/kitchen/KitchenPage';
+import { InventoryPage } from './features/inventory/InventoryPage';
+
+
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -29,7 +32,7 @@ export const router = createBrowserRouter([
           { path: 'menu', element: <MenuPage /> },
           { path: 'qr-codes', element: <QrCodePage /> },
           { path: 'reservations', element: <div className="p-8">Reservations</div> },
-          { path: 'inventory', element: <div className="p-8">Inventory</div> },
+          { path: 'inventory', element: <InventoryPage /> },
           { path: 'customers', element: <div className="p-8">Customers</div> },
           { path: 'analytics', element: <div className="p-8">Analytics</div> },
           { path: 'settings', element: <div className="p-8">Settings</div> },
